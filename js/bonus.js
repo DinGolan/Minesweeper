@@ -9,6 +9,7 @@
 function renderHints() {
     const elContainerHints     = document.querySelector('.hints-container');
     elContainerHints.innerHTML = '';
+    elContainerHints.title     = 'Click to Activate Hint';
 
     for (let i = 0; i < gGame.hintsLeft; i++) {
         const elHint     = document.createElement('span');
@@ -114,6 +115,57 @@ function getCellAndElement(cellPosition) {
     const negCell   = gBoard[cellPosition.i][cellPosition.j];
     const className = getClassName(cellPosition.i, cellPosition.j);
     const elNegCell = document.querySelector(`.${className}`);
-    
+
     return { negCellKey: negCell, elNegCellKey: elNegCell };
+}
+
+// --- //
+
+// ========================== //
+//         Best Score         //
+// ========================== //
+function getBestScoreKey(levelKey) {
+    return `minesweeper-bestScore-${levelKey}`;
+}
+
+function getBestScoreValueFromLocalStorage(levelKey) {
+    const key   = getBestScoreKey(levelKey);
+    const value = localStorage.getItem(key);
+    return value ? +value : null; 
+}
+
+function updateBestScoreIfNeeded(levelKey, currentScore) {
+    const key       = getBestScoreKey(levelKey);
+    const bestScore = getBestScoreValueFromLocalStorage(levelKey);
+
+    if (bestScore === null || currentScore < bestScore) {
+        localStorage.setItem(key, currentScore);
+        renderBestScoreDisplay();
+    }
+}
+
+function renderBestScoreDisplay() {
+    const bestScore   = getBestScoreValueFromLocalStorage(gLevel.KEY);
+    const elBestScore = document.querySelector('.best-score-display');
+    const elResetBtn  = document.querySelector('.reset-best-btn');
+
+    if (bestScore !== null) {
+        elBestScore.innerText = `${TROPHY} Best Score : ${String(bestScore).padStart(PAD_ZEROS, '0')}`;
+        elResetBtn.classList.remove('disabled');
+    } else {
+        elBestScore.innerText = `${TROPHY} Best Score : —`;
+        elResetBtn.classList.add('disabled');
+    }
+    
+    elResetBtn.innerText = RESET_BEST_SCORE;
+    elResetBtn.title     = 'Reset Best Score';
+}
+
+function resetBestScore() {
+    const bestScore = getBestScoreValueFromLocalStorage(gLevel.KEY);
+    if (bestScore === null) return;
+
+    const key = getBestScoreKey(gLevel.KEY);
+    localStorage.removeItem(key);
+    renderBestScoreDisplay();
 }

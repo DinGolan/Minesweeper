@@ -17,7 +17,8 @@ var gIsFirstClick = true;
 
 var gLevel = {
     SIZE:  4,
-    MINES: 2
+    MINES: 2,
+    KEY: 'beginner'
 };
 
 var gGame = {
@@ -42,10 +43,13 @@ const FLAG       = '🚩';
 const ERROR      = '❌';
 const LIVE       = '❤️';
 const HINT       = '💡';
+const TROPHY     = '🏆';
 const START_GAME = '😊';
 const WIN_GAME   = '😎';
 const LOSE_GAME  = '😖';
 const M_SECONDS  = 1000;
+const PAD_ZEROS  = 3;
+const RESET_BEST_SCORE = '🗑';
 
 // --- //
 

@@ -3,6 +3,9 @@
 /***************/
 'use strict';
 
+// [TODO] //
+// [1] Check all the classes with `add`.
+
 // ========================== //
 //        Explanations        //
 // ========================== //
@@ -55,6 +58,7 @@ function onLevelChange(elLevel) {
 
     gLevel.SIZE  = levelConfig.SIZE;
     gLevel.MINES = levelConfig.MINES;
+    gLevel.KEY   = selectedLevel;
 
     onInit();
 }
@@ -99,15 +103,14 @@ function resetGameVars() {
 function resetDOM() {
     toggleLevelSelectors(false);
 
+    renderBestScoreDisplay();
+
     renderHints();
     updateLivesDisplay();
     
     updateTimerDisplay();
     updateFaceDisplay(START_GAME);
     updateMinesCounter();
-
-    const elBoard = document.querySelector('.minesweeper-board');
-    elBoard.classList.remove('game-over');
 
     hideMessage();
 }
@@ -465,21 +468,6 @@ function updateCellFlagDisplay(elCell, sign, selector) {
 
 // --- //
 
-// ================================== //
-//        Context Menu Handler        //
-// ================================== //
-function setupEventListeners() {
-    const elBoard = document.querySelector('.minesweeper-board');
-    elBoard.removeEventListener('contextmenu', handleRightClick); // Avoid Duplicates //
-    elBoard.addEventListener('contextmenu', handleRightClick);
-}
-
-function handleRightClick(event) {
-    event.preventDefault();
-}
-
-// --- //
-
 // =============================== //
 //         Game Over Logic         //
 // =============================== //
@@ -508,10 +496,11 @@ function areAllFlagsOnMinesOnly() {
 }
 
 function setGameOver(faceEmoji) {
-    const elBoard = document.querySelector('.minesweeper-board');
-    elBoard.classList.add('game-over');
-
     updateFaceDisplay(faceEmoji);
+
+    if (faceEmoji === WIN_GAME) {
+        updateBestScoreIfNeeded(gLevel.KEY, gGame.secsPassed);
+    }
 
     gGame.isOn = false;
     stopTimer();

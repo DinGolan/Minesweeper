@@ -32,23 +32,27 @@ function getClassName(i, j) {
 // ============================== //
 function updateTimerDisplay() {
     const elTimer     = document.querySelector('.minesweeper-timer');
-    elTimer.innerText = String(gGame.secsPassed).padStart(3, '0'); 
+    elTimer.innerText = String(gGame.secsPassed).padStart(PAD_ZEROS, '0'); 
+    elTimer.title     = 'Timer Display';
 }
 
 function updateFaceDisplay(faceEmoji) {
     const elFace     = document.querySelector('.minesweeper-face');
     elFace.innerText = faceEmoji;
+    elFace.title     = 'Restart Game';
 }
 
 function updateMinesCounter() {
     const minesLeft          = gLevel.MINES - gGame.markedCount
     const elMinesCounter     = document.querySelector('.minesweeper-counter');
-    elMinesCounter.innerText = String(minesLeft).padStart(3, '0');
+    elMinesCounter.innerText = String(minesLeft).padStart(PAD_ZEROS, '0');
+    elMinesCounter.title     = 'Number of Left Mines';
 }
 
 function updateLivesDisplay() {
     const elLives     = document.querySelector('.lives-display');
     elLives.innerText = LIVE.repeat(gGame.livesLeft);
+    elLives.title     = 'Remaining Lives';
 }
 
 function removeNumberClasses(elCell) {
@@ -97,6 +101,21 @@ function clearMineResetTimeout() {
         clearTimeout(gMineResetTimeoutId);
         gMineResetTimeoutId = null;
     }
+}
+
+// --- //
+
+// ================================== //
+//        Context Menu Handler        //
+// ================================== //
+function setupEventListeners() {
+    const elBoard = document.querySelector('.minesweeper-board');
+    elBoard.removeEventListener('contextmenu', handleRightClick); // Avoid Duplicates //
+    elBoard.addEventListener('contextmenu', handleRightClick);
+}
+
+function handleRightClick(event) {
+    event.preventDefault();
 }
 
 // --- //

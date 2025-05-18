@@ -19,6 +19,7 @@
 body {
     align-items: center;
     background: var(--bg-gray);
+    cursor: default;
     display: flex;
     font-family: 'Tahoma', Arial, sans-serif;
     flex-direction: column;
@@ -40,6 +41,45 @@ body {
     text-shadow: 1px 1px 0 #fff;
     text-align: center;
     width: 15em;
+}
+
+/* BEST SCORE */
+.minesweeper-best-score {
+    align-items: center;
+    box-sizing: border-box;
+    color: #222;
+    display: flex;
+    font-family: Consolas, 'Courier New', monospace;
+    font-size: 1.1em;
+    font-weight: bold;
+    justify-content: space-between;
+    letter-spacing: 1px;
+    margin-bottom: 25px;
+    
+    /* Align the Best Score (left) and Reset button (right) to match the width of the level selector buttons below */
+    max-width: 446px;
+
+    text-align: center;
+    text-shadow: 0 1px 0 #fff;
+    width: 100%;
+}
+
+.minesweeper-best-score .reset-best-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 2em;
+    opacity: 0.6;
+    transition: opacity 0.5s;
+}
+
+.minesweeper-best-score .reset-best-btn:hover {
+    opacity: 1;
+}
+
+.minesweeper-best-score .reset-best-btn.disabled {
+    opacity: 0.2;
+    cursor: default;
 }
 
 /* --- */
