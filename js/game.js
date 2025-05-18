@@ -3,9 +3,6 @@
 /***************/
 'use strict';
 
-// [TODO] //
-// [1] Check all the classes with `add`.
-
 // ========================== //
 //        Explanations        //
 // ========================== //
