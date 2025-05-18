@@ -3,6 +3,9 @@
 /***************/
 'use strict';
 
+// ============================= //
+//       Random Utilities        //
+// ============================= //
 function getRandomIntExclusive(min, max) {
 	const range = (max - min);
     return Math.floor(Math.random() * range) + min;
@@ -13,10 +16,20 @@ function getRandomIntInclusive(min, max) {
     return Math.floor(Math.random() * range) + min;
 }
 
+// --- //
+
+// ================================ //
+//     Class & Selector Helpers     //
+// ================================ //
 function getClassName(i, j) {
     return `cell-${i}-${j}`;
 }
 
+// --- //
+
+// ============================== //
+//     UI Rendering / Updates     //
+// ============================== //
 function updateTimerDisplay() {
     const elTimer     = document.querySelector('.minesweeper-timer');
     elTimer.innerText = String(gGame.secsPassed).padStart(3, '0'); 
@@ -38,6 +51,11 @@ function updateLivesDisplay() {
     elLives.innerText = LIVE.repeat(gGame.livesLeft);
 }
 
+// --- //
+
+// =========================== //
+//         Timer Logic         //
+// =========================== //
 function startTimer() {
     gTimerInterval = setInterval(() => {
         gGame.secsPassed++;
@@ -52,6 +70,11 @@ function stopTimer() {
     }
 }
 
+// --- //
+
+// ============================== //
+//      In-Game Messaging UI      //
+// ============================== //
 function showMessage(msgHTML) {
     const elMsg         = document.querySelector('.minesweeper-message');
     elMsg.innerHTML     = msgHTML;

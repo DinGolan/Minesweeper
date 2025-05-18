@@ -13,6 +13,8 @@
     --text-dark: #222;
 }
 
+/* --- */
+
 /* BODY / TITLE */
 body {
     align-items: center;
@@ -39,6 +41,8 @@ body {
     text-align: center;
     width: 15em;
 }
+
+/* --- */
 
 /* LEVELS */
 .level-selector {
@@ -85,6 +89,8 @@ body {
     cursor: not-allowed;
 }
 
+/* --- */
+
 /* LIVES */
 .lives-display {
     color: red;
@@ -94,6 +100,8 @@ body {
     text-align: center;
     user-select: none;
 }
+
+/* --- */
 
 /* BOARD / MINES COUNTER / TIMER */
 .minesweeper-container {
@@ -189,6 +197,8 @@ body {
     width: var(--cell-size);
 }
 
+/* --- */
+
 /* CELL STATES */
 .minesweeper-board td.cell-empty {
     background: var(--bg-empty);
@@ -236,6 +246,8 @@ body {
     opacity: 0.88;
 }
 
+/* --- */
+
 /* COLORS FOR NUMBERS */
 .minesweeper-board .cell-1 { color: #0048ff; }
 .minesweeper-board .cell-2 { color: #138a13; }
@@ -245,6 +257,8 @@ body {
 .minesweeper-board .cell-6 { color: #008b8b; }
 .minesweeper-board .cell-7 { color: #000; }
 .minesweeper-board .cell-8 { color: var(--border-dark); }
+
+/* --- */
 
 /* MESSAGE */
 .minesweeper-message {
