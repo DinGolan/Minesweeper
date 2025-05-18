@@ -91,19 +91,41 @@ body {
 
 /* --- */
 
-/* LIVES */
-.lives-display {
-    color: red;
+/* LIVES / HINTS */
+.lives-and-hints {
+    box-sizing: border-box;
+    display: flex;
     font-size: 1.8em;
-    height: 1.5em;
-    margin-bottom: 15px;
-    text-align: center;
-    user-select: none;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    width: 100%;
+}
+
+.lives-and-hints .hint {
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.3s;
+}
+
+.lives-and-hints .hint.active {
+    background: yellow;
+}
+
+.lives-and-hints .hint.used {
+    cursor: default;
+    opacity: 0.2;
+    pointer-events: none;
 }
 
 /* --- */
 
 /* BOARD / MINES COUNTER / TIMER */
+.game-container {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+}
+
 .minesweeper-container {
     border: 3px solid var(--border-light);
     box-shadow: 2px 2px 6px #8884;
@@ -211,15 +233,12 @@ body {
 }
 
 .minesweeper-board td.cell-flag {
-    background: var(--border-inner);
-    color: var(--text-red);
     font-size: 1.5em;
     opacity: 0.88;
 }
 
 .minesweeper-board td.cell-mine {
     background: #ffcdcd;
-    color: var(--text-dark);
     font-size: 1.5em;
     line-height: 1;
     padding: 0;
@@ -244,6 +263,16 @@ body {
     background: var(--border-inner);
     font-size: 1.5em;
     opacity: 0.88;
+}
+
+.minesweeper-board td.cell-temp-reveal {
+    background: #ffffd0;
+    transition: background-color 0.5s ease;
+}
+
+.minesweeper-board td.cell-temp-reveal.fadeout {
+    background-color: transparent;
+    color: transparent;
 }
 
 /* --- */
@@ -279,6 +308,6 @@ body {
     display: block;
 }
 
-.minesweeper-message .hint {
+.minesweeper-message .hint-message {
     color: green;
 }

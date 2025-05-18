@@ -72,6 +72,7 @@ function toggleLevelSelectors(isDisabled) {
 function onInit() {
     resetGameVars();
     resetDOM();
+    resetTimersAndIntervals();
 
     gBoard = buildBoard();
     renderBoard('.minesweeper-board');
@@ -80,24 +81,27 @@ function onInit() {
 }
 
 function resetGameVars() {
-    gIsFirstClick       = true;
+    gBoard          = [];
+    gHintedCells    = [];
+
+    gIsFirstClick = true;
+
     gGame.isOn          = false;
+    gGame.isHintMode    = false;
+    gGame.activeHintEl  = null;
     gGame.secsPassed    = 0;
     gGame.markedCount   = 0;
     gGame.revealedCount = 0;
     gGame.livesLeft     = 3;
-
-    stopTimer();
-
-    if (gMineResetTimeoutId) {
-        clearTimeout(gMineResetTimeoutId);
-        gMineResetTimeoutId = null;
-    }
+    gGame.hintsLeft     = 3;
 }
 
 function resetDOM() {
     toggleLevelSelectors(false);
+
+    renderHints();
     updateLivesDisplay();
+    
     updateTimerDisplay();
     updateFaceDisplay(START_GAME);
     updateMinesCounter();
@@ -106,6 +110,12 @@ function resetDOM() {
     elBoard.classList.remove('game-over');
 
     hideMessage();
+}
+
+function resetTimersAndIntervals() {
+    stopTimer();
+    clearMineResetTimeout();
+    clearHintTimeouts();
 }
 
 function onRestart() {
@@ -173,9 +183,16 @@ function renderBoard(selector) {
 //        First Click Logic        //
 // =============================== //
 function onCellClicked(elCell, i, j) {
+    clearHintTimeouts();
+
     if (gIsFirstClick) handleFirstClick(i, j);
     
     if (!gGame.isOn) return;
+
+    if (gGame.isHintMode) {
+        handleHintMode(i, j);
+        return;
+    }
 
     const currCell = gBoard[i][j];
     if (currCell.isMarked || currCell.isRevealed) return;
@@ -210,7 +227,7 @@ function isMineCountValid() {
 
         updateFaceDisplay(ERROR);
         showMessage(`<p>⚠️ Too many mines for this board size ...</p>
-                     <p class="hint">💡 You need to click on ❌ to start the game again ...</p>`);
+                     <p class="hint-message">💡 You need to click on ❌ to start the game again ...</p>`);
         
         return false;
     }
@@ -329,6 +346,8 @@ function handleMineCell(elCell, i, j) {
 }
 
 function resetMineCell(currCell, elCell) {
+    clearMineResetTimeout();
+
     gMineResetTimeoutId = setTimeout(() => {
         elCell.innerText    = EMPTY;
         currCell.isRevealed = false;
@@ -341,11 +360,7 @@ function handleNumberCell(currCell, elCell) {
     gGame.revealedCount++;
     
     // Remove any existing number color classes (cell-1 ... cell-8) from the cell before adding the class for the current minesAroundCount //
-    for (let i = 1; i <= 8; i++) {
-        if (elCell.classList.contains(`cell-${i}`)) {
-            elCell.classList.remove(`cell-${i}`);
-        }
-    }
+    removeNumberClasses(elCell);
 
     elCell.innerText = currCell.minesAroundCount;
     elCell.classList.add('cell-number', `cell-${currCell.minesAroundCount}`);
@@ -397,6 +412,8 @@ function expandReveal(board, currI, currJ) {
 //         Marking Logic         //
 // ============================= //
 function onCellMarked(elCell, i, j) {
+    if (gIsFirstClick) handleFirstClick(i, j);
+
     if (!gGame.isOn) return;
 
     const currCell = gBoard[i][j];

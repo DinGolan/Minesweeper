@@ -51,6 +51,14 @@ function updateLivesDisplay() {
     elLives.innerText = LIVE.repeat(gGame.livesLeft);
 }
 
+function removeNumberClasses(elCell) {
+    for (let i = 1; i <= 8; i++) {
+        if (elCell.classList.contains(`cell-${i}`)) {
+            elCell.classList.remove(`cell-${i}`);
+        }
+    }
+}
+
 // --- //
 
 // =========================== //
@@ -67,6 +75,27 @@ function stopTimer() {
     if (gTimerInterval) {
         clearInterval(gTimerInterval);
         gTimerInterval = null;
+    }
+}
+
+function clearHintTimeouts() {
+    /**
+     * Explanations :
+     * - Clears any active hint-related timeouts to prevent delayed UI updates from running after game state has changed.
+     **/
+    if (gHintTimeoutIds.length > 0) {
+        for (let i = 0; i < gHintTimeoutIds.length; i++) {
+            if (gHintTimeoutIds[i]) clearTimeout(gHintTimeoutIds[i]);
+        }
+
+        gHintTimeoutIds = [];
+    }
+}
+
+function clearMineResetTimeout() {
+    if (gMineResetTimeoutId) {
+        clearTimeout(gMineResetTimeoutId);
+        gMineResetTimeoutId = null;
     }
 }
 
