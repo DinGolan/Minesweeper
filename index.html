@@ -16,6 +16,16 @@
     <!-- Header -->
     <h1 class="minesweeper-title">MineSweeper Game</h1>
 
+    <!-- Levels -->
+    <div class="level-selector">
+        <label><input type="radio" name="level" value="beginner" onclick="onLevelChange(this)" checked> Beginner</label>
+        <label><input type="radio" name="level" value="medium" onclick="onLevelChange(this)"> Medium</label>
+        <label><input type="radio" name="level" value="expert" onclick="onLevelChange(this)"> Expert</label>
+    </div>
+
+    <!-- Lives -->
+    <div class="lives-display"></div>
+
     <!-- Game -->
     <div class="minesweeper-container">
         <div class="minesweeper-header">

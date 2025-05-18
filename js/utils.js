@@ -33,6 +33,11 @@ function updateMinesCounter() {
     elMinesCounter.innerText = String(minesLeft).padStart(3, '0');
 }
 
+function updateLivesDisplay() {
+    const elLives     = document.querySelector('.lives-display');
+    elLives.innerText = LIVE.repeat(gGame.livesLeft);
+}
+
 function startTimer() {
     gTimerInterval = setInterval(() => {
         gGame.secsPassed++;

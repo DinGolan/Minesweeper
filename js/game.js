@@ -3,9 +3,74 @@
 /***************/
 'use strict';
 
+// ========================== //
+//        Explanations        //
+// ========================== //
+/**
+ * Cell States :
+ * +----------------------+-------------------------------------+
+ * | State (Name)         | Description                         |
+ * +----------------------+-------------------------------------+
+ * | "unrevealed"         | Cell is hidden, waiting for action  |
+ * +----------------------+-------------------------------------+
+ * | "flagged"            | Marked by the user as a flag        |
+ * +----------------------+-------------------------------------+
+ * | "revealed-number"    | Revealed with number (1 – 8)        |
+ * +----------------------+-------------------------------------+
+ * | "revealed-empty"     | Revealed, no mines around (0 count) |
+ * +----------------------+-------------------------------------+
+ * | "revealed-mine"      | Mine revealed → game over           |
+ * +----------------------+-------------------------------------+
+ * 
+ * Transitions :
+ * +----------------------+-----------------+-------------------------------------+
+ * | State (Before)       | State (After)   | Click Type                          |
+ * +----------------------+-----------------+-------------------------------------+
+ * | unrevealed           | flagged         | Right click                         |
+ * +----------------------+-----------------+-------------------------------------+
+ * | flagged              | unrevealed      | Right click again                   |
+ * +----------------------+-----------------+-------------------------------------+
+ * | unrevealed           | revealed-number | Left click, has number              |
+ * +----------------------+-----------------+-------------------------------------+
+ * | unrevealed           | revealed-empty  | Left click, no mines around         |
+ * +----------------------+-----------------+-------------------------------------+
+ * | unrevealed           | mine-clicked    | Left click on mine, still has lives |
+ * +----------------------+-----------------+-------------------------------------+
+ * | mine-clicked         | unrevealed      | After reset / life lost             |
+ * +----------------------+-----------------+-------------------------------------+
+ * | unrevealed           | revealed-mine   | If game over and isMine             |
+ * +----------------------+-----------------+-------------------------------------+
+ **/
+
+// --- //
+
+// ============================= //
+//        Level Selectors        //
+// ============================= //
+function onLevelChange(elLevel) {
+    if (gGame.isOn) return;
+
+    const selectedLevel = elLevel.value;
+    const levelConfig   = LEVELS[selectedLevel];
+
+    gLevel.SIZE  = levelConfig.SIZE;
+    gLevel.MINES = levelConfig.MINES;
+
+    onInit();
+}
+
+function toggleLevelSelectors(isDisabled) {
+    const radios = document.querySelectorAll('input[name="level"]');
+    radios.forEach(radio => radio.disabled = isDisabled);
+}
+
+// --- //
+
+// ================================== //
+//         Game Initialization        //
+// ================================== //
 function onInit() {
     resetGameVars();
-    stopTimer();
     resetDOM();
 
     gBoard = buildBoard();
@@ -16,13 +81,23 @@ function onInit() {
 
 function resetGameVars() {
     gIsFirstClick       = true;
-    gGame.isOn          = true;
+    gGame.isOn          = false;
     gGame.secsPassed    = 0;
     gGame.markedCount   = 0;
     gGame.revealedCount = 0;
+    gGame.livesLeft     = 3;
+
+    stopTimer();
+
+    if (gMineResetTimeoutId) {
+        clearTimeout(gMineResetTimeoutId);
+        gMineResetTimeoutId = null;
+    }
 }
 
 function resetDOM() {
+    toggleLevelSelectors(false);
+    updateLivesDisplay();
     updateTimerDisplay();
     updateFaceDisplay(START_GAME);
     updateMinesCounter();
@@ -33,16 +108,15 @@ function resetDOM() {
     hideMessage();
 }
 
-function setupEventListeners() {
-    const elBoard = document.querySelector('.minesweeper-board');
-    elBoard.removeEventListener('contextmenu', handleRightClick); // Avoid Duplicates //
-    elBoard.addEventListener('contextmenu', handleRightClick);
+function onRestart() {
+    onInit();
 }
 
-function handleRightClick(event) {
-    event.preventDefault();
-}
+// --- //
 
+// ================================ //
+//        Board Setup & Build       //
+// ================================ //
 function buildBoard() {
     let board = [];
 
@@ -76,7 +150,7 @@ function renderBoard(selector) {
         strHTML += '<tr>';
         
         for (let j = 0; j < gLevel.SIZE; j++) {
-            const className = `${getClassName(i, j)} cell-closed`;
+            const className = `${getClassName(i, j)}`;
             strHTML        += `<td class="${className}"
                                    onclick="onCellClicked(this, ${i}, ${j})" 
                                    oncontextmenu="onCellMarked(this, ${i}, ${j})">
@@ -93,10 +167,15 @@ function renderBoard(selector) {
     elContainer.innerHTML = strHTML;
 }
 
-function onCellClicked(elCell, i, j) {
-    if (!gGame.isOn) return;
+// --- //
 
+// =============================== //
+//        First Click Logic        //
+// =============================== //
+function onCellClicked(elCell, i, j) {
     if (gIsFirstClick) handleFirstClick(i, j);
+    
+    if (!gGame.isOn) return;
 
     const currCell = gBoard[i][j];
     if (currCell.isMarked || currCell.isRevealed) return;
@@ -115,19 +194,24 @@ function onCellClicked(elCell, i, j) {
 function handleFirstClick(i, j) {
     if (!isMineCountValid()) return;
 
+    toggleLevelSelectors(true);
     setMinesPositions(gBoard, i, j);
     setMinesNegsCount(gBoard);
     startTimer();
+
     gIsFirstClick = false;
+    gGame.isOn    = true;
 }
 
 function isMineCountValid() {
     if (gLevel.MINES > (gLevel.SIZE ** 2) - 1) {
         gGame.isOn = false;
         stopTimer();
+
         updateFaceDisplay(ERROR);
         showMessage(`<p>⚠️ Too many mines for this board size ...</p>
                      <p class="hint">💡 You need to click on ❌ to start the game again ...</p>`);
+        
         return false;
     }
 
@@ -135,6 +219,11 @@ function isMineCountValid() {
     return true;
 }
 
+// --- //
+
+// ================================ //
+//       Mine Placement Logic       //
+// ================================ //
 // Option A - `setMinesPositions` //
 /**
  * +-----------------+------------------+
@@ -218,14 +307,34 @@ function calculateMinesAroundCell(board, currI, currJ) {
     return minesNegsCount;
 }
 
+// --- //
+
+// ================================= //
+//        Cell Click Handlers        //
+// ================================= //
 function handleMineCell(elCell, i, j) {
     elCell.innerText = BOMB;
 
-    elCell.classList.remove('cell-closed');
     elCell.classList.add('cell-mine-clicked');
 
-    endGameAndRevealMines(i, j);
+    gGame.livesLeft--;
+    updateLivesDisplay();
+
+    if (!gGame.livesLeft) {
+        endGameAndRevealMines(i, j);
+    } else {
+        const currCell = gBoard[i][j];
+        resetMineCell(currCell, elCell);
+    }
 }
+
+function resetMineCell(currCell, elCell) {
+    gMineResetTimeoutId = setTimeout(() => {
+        elCell.innerText    = EMPTY;
+        currCell.isRevealed = false;
+        elCell.classList.remove('cell-mine-clicked');
+    }, Math.floor(M_SECONDS / 3));
+} 
 
 function handleNumberCell(currCell, elCell) {
     currCell.isRevealed = true;
@@ -239,8 +348,6 @@ function handleNumberCell(currCell, elCell) {
     }
 
     elCell.innerText = currCell.minesAroundCount;
-
-    elCell.classList.remove('cell-closed');
     elCell.classList.add('cell-number', `cell-${currCell.minesAroundCount}`);
     
     checkGameOver();
@@ -251,31 +358,17 @@ function handleEmptyCell(currCell, elCell, i, j) {
     gGame.revealedCount++;
 
     elCell.innerText = EMPTY;
-    elCell.classList.remove('cell-closed');
     elCell.classList.add('cell-empty');
     expandReveal(gBoard, i, j);
 
     checkGameOver();
 }
 
-function endGameAndRevealMines(currI, currJ) {
-    for (let i = 0; i < gLevel.SIZE; i++) {
-        for (let j = 0; j < gLevel.SIZE; j++) {
-            if (i === currI && j === currJ) continue; // Mine gBoard[currI][currJ] already revealed // 
+// --- //
 
-            const currCell = gBoard[i][j];
-            if (currCell.isMine) {
-                const className  = getClassName(i, j);
-                const elCell     = document.querySelector(`.${className}`);
-                elCell.innerText = BOMB;
-                elCell.classList.add('cell-mine');
-            }
-        }
-    }
-
-    setGameOver(LOSE_GAME);
-}
-
+// ============================= //
+//        Expansion Logic        //
+// ============================= //
 function expandReveal(board, currI, currJ) {
     for (let i = currI - 1; i <= currI + 1; i++) {
         if (i < 0 || i >= gLevel.SIZE) continue;
@@ -298,40 +391,11 @@ function expandReveal(board, currI, currJ) {
     }
 }
 
-function checkGameOver() {
-    const totalCells          = gLevel.SIZE ** 2;
-    const areAllCellsRevealed = gGame.revealedCount === totalCells - gLevel.MINES;
-    const areAllFlagsCorrect  = areAllFlagsOnMinesOnly();
+// --- //
 
-    if (areAllCellsRevealed || areAllFlagsCorrect) {
-        setGameOver(WIN_GAME);
-    }
-}
-
-function setGameOver(faceEmoji) {
-    const elBoard = document.querySelector('.minesweeper-board');
-    elBoard.classList.add('game-over');
-
-    updateFaceDisplay(faceEmoji);
-
-    gGame.isOn = false;
-    stopTimer();
-}
-
-function areAllFlagsOnMinesOnly() {
-    if (gGame.markedCount != gLevel.MINES) return false;
-
-    for (let i = 0; i < gLevel.SIZE; i++) {
-        for (let j = 0; j < gLevel.SIZE; j++) {
-            const currCell = gBoard[i][j];
-            if ((currCell.isMine  && !currCell.isMarked) ||
-                (!currCell.isMine &&  currCell.isMarked)) return false;
-        }
-    }
-
-    return true;
-}
-
+// ============================= //
+//         Marking Logic         //
+// ============================= //
 function onCellMarked(elCell, i, j) {
     if (!gGame.isOn) return;
 
@@ -356,7 +420,7 @@ function unmarkCell(currCell, elCell) {
     currCell.isMarked = false;
     gGame.markedCount--;
 
-    updateCellFlagDisplay(elCell, EMPTY, 'cell-flag', 'cell-closed');
+    updateCellFlagDisplay(elCell, EMPTY, 'cell-flag');
     hideMessage();
 }
 
@@ -364,16 +428,92 @@ function markCell(currCell, elCell) {
     currCell.isMarked = true;
     gGame.markedCount++;
 
-    updateCellFlagDisplay(elCell, FLAG, 'cell-closed', 'cell-flag');
+    updateCellFlagDisplay(elCell, FLAG, 'cell-flag');
     checkGameOver();
 }
 
-function updateCellFlagDisplay(elCell, sign, removeSelector, addSelector) {
+function updateCellFlagDisplay(elCell, sign, selector) {
     elCell.innerText = sign;
-    elCell.classList.remove(removeSelector);
-    elCell.classList.add(addSelector);
+
+    switch (sign) {
+        case EMPTY:
+            elCell.classList.add(selector);
+            break;
+        
+        case FLAG:
+            elCell.classList.remove(selector);
+            break;
+    }
 }
 
-function onRestart() {
-    onInit();
+// --- //
+
+// ================================== //
+//        Context Menu Handler        //
+// ================================== //
+function setupEventListeners() {
+    const elBoard = document.querySelector('.minesweeper-board');
+    elBoard.removeEventListener('contextmenu', handleRightClick); // Avoid Duplicates //
+    elBoard.addEventListener('contextmenu', handleRightClick);
+}
+
+function handleRightClick(event) {
+    event.preventDefault();
+}
+
+// --- //
+
+// =============================== //
+//         Game Over Logic         //
+// =============================== //
+function checkGameOver() {
+    const totalCells          = gLevel.SIZE ** 2;
+    const areAllCellsRevealed = gGame.revealedCount === totalCells - gLevel.MINES;
+    const areAllFlagsCorrect  = areAllFlagsOnMinesOnly();
+
+    if (areAllCellsRevealed || areAllFlagsCorrect) {
+        setGameOver(WIN_GAME);
+    }
+}
+
+function areAllFlagsOnMinesOnly() {
+    if (gGame.markedCount != gLevel.MINES) return false;
+
+    for (let i = 0; i < gLevel.SIZE; i++) {
+        for (let j = 0; j < gLevel.SIZE; j++) {
+            const currCell = gBoard[i][j];
+            if ((currCell.isMine  && !currCell.isMarked) ||
+                (!currCell.isMine &&  currCell.isMarked)) return false;
+        }
+    }
+
+    return true;
+}
+
+function setGameOver(faceEmoji) {
+    const elBoard = document.querySelector('.minesweeper-board');
+    elBoard.classList.add('game-over');
+
+    updateFaceDisplay(faceEmoji);
+
+    gGame.isOn = false;
+    stopTimer();
+}
+
+function endGameAndRevealMines(currI, currJ) {
+    for (let i = 0; i < gLevel.SIZE; i++) {
+        for (let j = 0; j < gLevel.SIZE; j++) {
+            if (i === currI && j === currJ) continue; // Mine gBoard[currI][currJ] already revealed // 
+
+            const currCell = gBoard[i][j];
+            if (currCell.isMine) {
+                const className  = getClassName(i, j);
+                const elCell     = document.querySelector(`.${className}`);
+                elCell.innerText = BOMB;
+                elCell.classList.add('cell-mine');
+            }
+        }
+    }
+
+    setGameOver(LOSE_GAME);
 }
