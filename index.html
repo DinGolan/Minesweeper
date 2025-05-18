@@ -1,0 +1,36 @@
+<!----------------->
+<!-- MineSweeper -->
+<!----------------->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>MineSweeper</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body onload="onInit()">
+    <!-- Header -->
+    <h1 class="minesweeper-title">MineSweeper Game</h1>
+
+    <!-- Game -->
+    <div class="minesweeper-container">
+        <div class="minesweeper-header">
+            <div class="minesweeper-counter"></div>
+            <button class="minesweeper-face" onclick="onRestart()"></button>
+            <div class="minesweeper-timer"></div>
+        </div>
+        <div class="minesweeper-board"></div>
+    </div>
+    <div class="minesweeper-message"></div>
+
+    <!-- Script -->
+    <script src="js/config.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/game.js"></script>
+</body>
+
+</html>
