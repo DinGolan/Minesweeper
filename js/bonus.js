@@ -1,5 +1,5 @@
 /***************/
-/* MineSweeper */
+/* Minesweeper */
 /***************/
 'use strict';
 
