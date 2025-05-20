@@ -7,13 +7,15 @@
 //       Global Game State       //
 // ============================= //
 var gBoard          = [];
-var gHintTimeoutIds = [];
 var gHintedCells    = [];
+var gHintTimeoutIds = [];
 
-var gTimerInterval      = null;
-var gMineResetTimeoutId = null;
-
-var gIsFirstClick = true;
+var gTimer = {
+    gTimerInterval:        null,
+    gMineResetTimeoutId:   null,
+    gSafeClickTimeoutId:   null,
+    gSafeFadeoutTimeoutId: null
+};
 
 var gLevel = {
     SIZE:  4,
@@ -22,14 +24,16 @@ var gLevel = {
 };
 
 var gGame = {
-    isOn:          false,
-    isHintMode:    false,
-    activeHintEl:  null,
-    secsPassed:    0,
-    markedCount:   0,
-    revealedCount: 0,
-    livesLeft:     3,
-    hintsLeft:     3
+    isOn:           false,
+    isHintMode:     false,
+    isFirstClick:   true,
+    elHintActive:   null,
+    secsPassed:     0,
+    markedCount:    0,
+    revealedCount:  0,
+    livesLeft:      3,
+    hintsLeft:      3,
+    safeClicksLeft: 3
 };
 
 // --- //

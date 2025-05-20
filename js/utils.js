@@ -69,37 +69,23 @@ function removeNumberClasses(elCell) {
 //         Timer Logic         //
 // =========================== //
 function startTimer() {
-    gTimerInterval = setInterval(() => {
+    gTimer.gTimerInterval = setInterval(() => {
         gGame.secsPassed++;
         updateTimerDisplay();
     }, M_SECONDS);
 }
 
 function stopTimer() {
-    if (gTimerInterval) {
-        clearInterval(gTimerInterval);
-        gTimerInterval = null;
+    if (gTimer.gTimerInterval) {
+        clearInterval(gTimer.gTimerInterval);
+        gTimer.gTimerInterval = null;
     }
 }
 
-function clearHintTimeouts() {
-    /**
-     * Explanations :
-     * - Clears any active hint-related timeouts to prevent delayed UI updates from running after game state has changed.
-     **/
-    if (gHintTimeoutIds.length > 0) {
-        for (let i = 0; i < gHintTimeoutIds.length; i++) {
-            if (gHintTimeoutIds[i]) clearTimeout(gHintTimeoutIds[i]);
-        }
-
-        gHintTimeoutIds = [];
-    }
-}
-
-function clearMineResetTimeout() {
-    if (gMineResetTimeoutId) {
-        clearTimeout(gMineResetTimeoutId);
-        gMineResetTimeoutId = null;
+function clearMineTimeout() {
+    if (gTimer.gMineResetTimeoutId) {
+        clearTimeout(gTimer.gMineResetTimeoutId);
+        gTimer.gMineResetTimeoutId = null;
     }
 }
 
@@ -125,12 +111,18 @@ function handleRightClick(event) {
 // ============================== //
 function showMessage(msgHTML) {
     const elMsg         = document.querySelector('.minesweeper-message');
-    elMsg.innerHTML     = msgHTML;
+    const elContainer   = document.querySelector('.game-container');
+
+    elMsg.innerHTML = msgHTML;
     elMsg.classList.add('active');
+    elContainer.classList.add('with-message');
 }
 
 function hideMessage() {
-    const elMsg     = document.querySelector('.minesweeper-message');
+    const elMsg       = document.querySelector('.minesweeper-message');
+    const elContainer = document.querySelector('.game-container');
+
     elMsg.innerHTML = '';
     elMsg.classList.remove('active');
+    elContainer.classList.remove('with-message');
 }

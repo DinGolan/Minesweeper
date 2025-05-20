@@ -85,37 +85,51 @@ function resetGameVars() {
     gBoard          = [];
     gHintedCells    = [];
 
-    gIsFirstClick = true;
-
-    gGame.isOn          = false;
-    gGame.isHintMode    = false;
-    gGame.activeHintEl  = null;
-    gGame.secsPassed    = 0;
-    gGame.markedCount   = 0;
-    gGame.revealedCount = 0;
-    gGame.livesLeft     = 3;
-    gGame.hintsLeft     = 3;
+    gGame.isOn           = false;
+    gGame.isHintMode     = false;
+    gGame.isFirstClick   = true;
+    gGame.elHintActive   = null;
+    gGame.secsPassed     = 0;
+    gGame.markedCount    = 0;
+    gGame.revealedCount  = 0;
+    gGame.livesLeft      = 3;
+    gGame.hintsLeft      = 3;
+    gGame.safeClicksLeft = 3;
 }
 
 function resetDOM() {
+    /**
+     * Render Order :
+     * [1] - Radio Buttons.
+     * [2] - Best Score.
+     * [3] - Hints / Lives.
+     * [4] - Mines Counter / Emoji / Timer.
+     * [5] - Safe Clicks.
+     * [6] - Message to User (Edge Cases).
+     **/
     toggleLevelSelectors(false);
 
     renderBestScoreDisplay();
 
     renderHints();
     updateLivesDisplay();
-    
+
     updateTimerDisplay();
     updateFaceDisplay(START_GAME);
     updateMinesCounter();
+
+    disableSafeClickButton(true);
+    updateSafeClicksCounts();
 
     hideMessage();
 }
 
 function resetTimersAndIntervals() {
     stopTimer();
-    clearMineResetTimeout();
+    clearMineTimeout();
     clearHintTimeouts();
+    clearSafeClickTimeout();
+    clearSafeFadeoutTimeout();
 }
 
 function onRestart() {
@@ -183,13 +197,12 @@ function renderBoard(selector) {
 //        First Click Logic        //
 // =============================== //
 function onCellClicked(elCell, i, j) {
-    clearHintTimeouts();
-
-    if (gIsFirstClick) handleFirstClick(i, j);
+    if (gGame.isFirstClick) handleFirstClick(i, j);
     
     if (!gGame.isOn) return;
 
     if (gGame.isHintMode) {
+        clearHintTimeouts();
         handleHintMode(i, j);
         return;
     }
@@ -216,8 +229,11 @@ function handleFirstClick(i, j) {
     setMinesNegsCount(gBoard);
     startTimer();
 
-    gIsFirstClick = false;
-    gGame.isOn    = true;
+    gGame.isOn         = true;
+    gGame.isFirstClick = false;
+
+    disableSafeClickButton(false);
+    updateSafeClicksCounts();
 }
 
 function isMineCountValid() {
@@ -346,9 +362,9 @@ function handleMineCell(elCell, i, j) {
 }
 
 function resetMineCell(currCell, elCell) {
-    clearMineResetTimeout();
+    clearMineTimeout();
 
-    gMineResetTimeoutId = setTimeout(() => {
+    gTimer.gMineResetTimeoutId = setTimeout(() => {
         elCell.innerText    = EMPTY;
         currCell.isRevealed = false;
         elCell.classList.remove('cell-mine-clicked');
@@ -412,7 +428,7 @@ function expandReveal(board, currI, currJ) {
 //         Marking Logic         //
 // ============================= //
 function onCellMarked(elCell, i, j) {
-    if (gIsFirstClick) handleFirstClick(i, j);
+    if (gGame.isFirstClick) handleFirstClick(i, j);
 
     if (!gGame.isOn) return;
 

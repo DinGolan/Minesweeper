@@ -31,7 +31,8 @@
 
     <!-- Game -->
     <div class="game-container">
-        <!-- Lives -->
+
+        <!-- Lives / Hints -->
         <div class="lives-and-hints">
             <div class="hints-container"></div>
             <div class="lives-display"></div>
@@ -46,8 +47,17 @@
             </div>
             <div class="minesweeper-board"></div>
         </div>
+
         <div class="minesweeper-message"></div>
+
     </div>
+
+    <!-- Safe Click -->
+    <div class="safe-click-container">
+        <button class="safe-click-btn" onclick="onSafeClick()">Safe Click</button>
+        <div class="safe-clicks-count"></div>
+    </div>
+
 
     <!-- Script -->
      <script src="js/bonus.js"></script>

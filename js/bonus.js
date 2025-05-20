@@ -9,11 +9,11 @@
 function renderHints() {
     const elContainerHints     = document.querySelector('.hints-container');
     elContainerHints.innerHTML = '';
-    elContainerHints.title     = 'Click to Activate Hint';
 
     for (let i = 0; i < gGame.hintsLeft; i++) {
         const elHint     = document.createElement('span');
         elHint.innerText = HINT;
+        elHint.title     = 'Click to Activate Hint';
         elHint.onclick   = () => onHintClicked(elHint);
         elHint.classList.add('hint');
         elContainerHints.appendChild(elHint);
@@ -23,7 +23,7 @@ function renderHints() {
 function onHintClicked(elHint) {
     if (!gGame.hintsLeft || gGame.isHintMode) return;
 
-    gGame.activeHintEl = elHint;
+    gGame.elHintActive = elHint;
     gGame.isHintMode   = true;
     elHint.classList.add('active');
 }
@@ -33,11 +33,13 @@ function handleHintMode(i, j) {
     revealHintCells(gHintedCells)
 
     const timeoutId = setTimeout(() => {
-         // Remove active hint element //
-        if (gGame.activeHintEl) {
-            gGame.activeHintEl.classList.remove('active');
-            gGame.activeHintEl.classList.add('used');
-            gGame.activeHintEl = null;
+        
+        // Remove active hint element //
+        if (gGame.elHintActive) {
+            gGame.elHintActive.classList.remove('active');
+            gGame.elHintActive.classList.add('used');
+            gGame.elHintActive.title = '';
+            gGame.elHintActive       = null;
         }
         
         hideHintCells(gHintedCells);
@@ -104,7 +106,7 @@ function hideHintCells(gHintedCells) {
                 elNegCell.classList.remove('fadeout');
 
                 removeNumberClasses(elNegCell);
-            }, M_SECONDS / 2);
+            }, Math.floor(M_SECONDS / 2));
 
             gHintTimeoutIds.push(timeoutId);
         }
@@ -117,6 +119,20 @@ function getCellAndElement(cellPosition) {
     const elNegCell = document.querySelector(`.${className}`);
 
     return { negCellKey: negCell, elNegCellKey: elNegCell };
+}
+
+function clearHintTimeouts() {
+    /**
+     * Explanations :
+     * - Clears any active hint-related timeouts to prevent delayed UI updates from running after game state has changed.
+     **/
+    if (gHintTimeoutIds.length > 0) {
+        for (let i = 0; i < gHintTimeoutIds.length; i++) {
+            if (gHintTimeoutIds[i]) clearTimeout(gHintTimeoutIds[i]);
+        }
+
+        gHintTimeoutIds = [];
+    }
 }
 
 // --- //
@@ -168,4 +184,111 @@ function resetBestScore() {
     const key = getBestScoreKey(gLevel.KEY);
     localStorage.removeItem(key);
     renderBestScoreDisplay();
+}
+
+// --- //
+
+// ========================== //
+//         Safe Click         //
+// ========================== //
+function disableSafeClickButton(isDisabled) {
+    const elSafeBtn    = document.querySelector('.safe-click-btn');
+    elSafeBtn.disabled = isDisabled;
+}
+
+function updateSafeClicksCounts() {
+    const elSafeCount = document.querySelector('.safe-clicks-count');
+    
+    if (!gGame.isOn) {
+        elSafeCount.innerText = '';
+        return;
+    }
+    
+    elSafeCount.innerText = `${gGame.safeClicksLeft} Clicks Available`;
+}
+
+function onSafeClick() {
+    if (!gGame.isOn || !gGame.safeClicksLeft) return;
+
+    disableSafeClickButton(true); // Prevent rapid consecutive clicks by temporarily disabling the button //
+
+    const safeCellsPos = [];
+
+    for (let i = 0; i < gLevel.SIZE; i++) {
+        for (let j = 0; j < gLevel.SIZE; j++) {
+            const currCell = gBoard[i][j];
+            if (!currCell.isMine && !currCell.isMarked && !currCell.isRevealed) {
+                const cellPos = { i: i, j: j };
+                safeCellsPos.push(cellPos);
+            }
+        }
+    }
+
+    const randIdx     = getRandomIntExclusive(0, safeCellsPos.length);
+    const randCellPos = safeCellsPos[randIdx];
+    revealSafeCellContent(randCellPos);
+
+    clearSafeClickTimeout();
+    gTimer.gSafeClickTimeoutId = setTimeout(() => {
+        hideSafeCellContent(randCellPos);
+        gGame.safeClicksLeft--;
+        updateSafeClicksCounts();
+
+        if (!gGame.safeClicksLeft) {
+            disableSafeClickButton(true);
+        } else {
+            disableSafeClickButton(false); // Re-enable for next safe click //
+        }
+    }, M_SECONDS * 1.5);
+}
+
+function revealSafeCellContent(safeCellPos) {
+    const safeCell   = gBoard[safeCellPos.i][safeCellPos.j];
+    const className  = getClassName(safeCellPos.i, safeCellPos.j);
+    const elSafeCell = document.querySelector(`.${className}`);
+    
+    if (safeCell.isMine || safeCell.isRevealed) return;
+
+    if (safeCell.minesAroundCount > 0) {
+        elSafeCell.innerText = safeCell.minesAroundCount;
+        
+        removeNumberClasses(elSafeCell);
+        elSafeCell.classList.add(`cell-${safeCell.minesAroundCount}`);
+    } else {
+        elSafeCell.innerText = EMPTY;
+    }
+
+    elSafeCell.classList.add('cell-safe-click');
+}
+
+function hideSafeCellContent(safeCellPos) {
+    const safeCell   = gBoard[safeCellPos.i][safeCellPos.j];
+    const className  = getClassName(safeCellPos.i, safeCellPos.j);
+    const elSafeCell = document.querySelector(`.${className}`);
+
+    elSafeCell.classList.add('fadeout');
+
+    clearSafeFadeoutTimeout();
+    gTimer.gSafeFadeoutTimeoutId = setTimeout(() => {
+        elSafeCell.classList.remove('cell-safe-click', 'fadeout');
+
+        if (!safeCell.isRevealed) {
+            elSafeCell.innerText = safeCell.isMarked ? FLAG : EMPTY;
+            removeNumberClasses(elSafeCell);
+        }
+    }, Math.floor(M_SECONDS / 2));
+}
+
+function clearSafeClickTimeout() {
+    if (gTimer.gSafeClickTimeoutId) {
+        clearTimeout(gTimer.gSafeClickTimeoutId);
+        gTimer.gSafeClickTimeoutId = null;
+    }
+}
+
+function clearSafeFadeoutTimeout() {
+    if (gTimer.gSafeFadeoutTimeoutId) {
+        clearTimeout(gTimer.gSafeFadeoutTimeoutId);
+        gTimer.gSafeFadeoutTimeoutId = null;
+    }
 }

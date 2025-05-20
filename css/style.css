@@ -133,6 +133,7 @@ body {
 
 /* LIVES / HINTS */
 .lives-and-hints {
+    align-items: center;
     box-sizing: border-box;
     display: flex;
     font-size: 1.8em;
@@ -164,6 +165,11 @@ body {
     align-items: center;
     display: flex;
     flex-direction: column;
+    position: relative;
+}
+
+.game-container.with-message {
+    padding-bottom: 20px;
 }
 
 .minesweeper-container {
@@ -329,19 +335,83 @@ body {
 
 /* --- */
 
+/* SAFE CLICK */
+.safe-click-container {
+    align-items: center;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 25px;
+}
+
+.safe-click-container .safe-click-btn {
+    border: none;
+    border-radius: 12px;
+    background-color: #00aaff;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    color: white;
+    cursor: pointer;
+    font-size: 1.2em;
+    font-weight: bold;
+    margin-top: 15px;
+    padding: 14px 26px;
+    transition: background-color 0.3s ease;
+}
+
+.safe-click-container .safe-click-btn:hover {
+    background-color: #008fcc;
+}
+
+.safe-click-container .safe-click-btn:disabled,
+.safe-click-container .safe-click-btn:disabled:hover,
+.safe-click-container .safe-click-btn:disabled:focus {
+    box-shadow: none;
+    background-color: #00aaff;
+    cursor: default;
+    filter: none;
+    opacity: 0.4;
+}
+
+.safe-click-container .safe-clicks-count {
+    color: #222;
+    font-size: 1.1em;
+    font-weight: bold;
+    font-family: 'Segoe UI', 'Tahoma', sans-serif;
+    margin-top: 15px;
+    text-align: center;
+}
+
+.minesweeper-board td.cell-safe-click {
+    background-color: #c8f7c5;
+    box-shadow: 0 0 10px #4caf50;
+    font-size: 1.5em;
+    transition: background-color 0.6s, box-shadow 0.6s;
+}
+
+.minesweeper-board .cell-safe-click.fadeout {
+    box-shadow: none;
+    background-color: transparent;
+    color: transparent;
+}
+
+/* --- */
+
 /* MESSAGE */
 .minesweeper-message {
+    bottom: -40px;
     color: var(--text-red);
     display: none;
     font-size: 1.2em;
     font-weight: bold;
+    left: 50%;
     line-height: 24px;
-    margin-top: 16px;
-    margin-bottom: 8px;
+    position: absolute;
     text-align: center;
     text-overflow: ellipsis;
+    transform: translateX(-50%);
     transition: opacity 0.3s ease;
     white-space: nowrap;
+    z-index: 10;
 }
 
 .minesweeper-message.active {
