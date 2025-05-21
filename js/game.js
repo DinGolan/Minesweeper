@@ -83,6 +83,7 @@ function onInit() {
 
 function resetGameVars() {
     gBoard          = [];
+    gUndoStack      = [];
     gHintedCells    = [];
 
     gGame.isOn           = false;
@@ -100,13 +101,16 @@ function resetGameVars() {
 function resetDOM() {
     /**
      * Render Order :
-     * [1] - Radio Buttons.
-     * [2] - Best Score.
-     * [3] - Hints / Lives.
-     * [4] - Mines Counter / Emoji / Timer.
-     * [5] - Safe Clicks.
-     * [6] - Message to User (Edge Cases).
+     * [1] - Theme.
+     * [2] - Radio Buttons.
+     * [3] - Best Score.
+     * [4] - Hints / Lives.
+     * [5] - Mines Counter / Emoji / Timer.
+     * [6] - Safe Clicks.
+     * [7] - Message to User (Edge Cases).
      **/
+    resetToggleTheme();
+    
     toggleLevelSelectors(false);
 
     renderBestScoreDisplay();
@@ -119,6 +123,7 @@ function resetDOM() {
     updateMinesCounter();
 
     disableSafeClickButton(true);
+    disableUndoButton(true);
     updateSafeClicksCounts();
 
     hideMessage();
@@ -174,12 +179,35 @@ function renderBoard(selector) {
         strHTML += '<tr>';
         
         for (let j = 0; j < gLevel.SIZE; j++) {
-            const className = `${getClassName(i, j)}`;
-            strHTML        += `<td class="${className}"
-                                   onclick="onCellClicked(this, ${i}, ${j})" 
-                                   oncontextmenu="onCellMarked(this, ${i}, ${j})">
-                               ${EMPTY}
-                               </td>`;
+            const currCell     = gBoard[i][j];
+            const className    = `${getClassName(i, j)}`;
+            let cellContent    = EMPTY;
+            let cellStateClass = '';
+
+            if (currCell.isRevealed) {
+                if (currCell.isMine) {
+                    cellContent    = BOMB;
+                    cellStateClass = 'cell-mine';
+                } 
+                else if (currCell.minesAroundCount > 0) {
+                    cellContent    = currCell.minesAroundCount;
+                    cellStateClass = `cell-number cell-${currCell.minesAroundCount}`;
+                } 
+                else {
+                    cellContent    = EMPTY;
+                    cellStateClass = 'cell-empty';
+                }
+            } 
+            else if (currCell.isMarked) {
+                cellContent    = FLAG;
+                cellStateClass = 'cell-flag';
+            }
+
+            strHTML += `<td class="${className} ${cellStateClass}"
+                            onclick="onCellClicked(this, ${i}, ${j})" 
+                            oncontextmenu="onCellMarked(this, ${i}, ${j})">
+                            ${cellContent}
+                        </td>`;
         }
 
         strHTML += '</tr>';
@@ -197,6 +225,8 @@ function renderBoard(selector) {
 //        First Click Logic        //
 // =============================== //
 function onCellClicked(elCell, i, j) {
+    saveGameState(); // Store for Reversal Action //
+    
     if (gGame.isFirstClick) handleFirstClick(i, j);
     
     if (!gGame.isOn) return;
@@ -428,6 +458,8 @@ function expandReveal(board, currI, currJ) {
 //         Marking Logic         //
 // ============================= //
 function onCellMarked(elCell, i, j) {
+    saveGameState(); // Store for Reversal Action //
+    
     if (gGame.isFirstClick) handleFirstClick(i, j);
 
     if (!gGame.isOn) return;
@@ -517,6 +549,10 @@ function setGameOver(faceEmoji) {
 
     gGame.isOn = false;
     stopTimer();
+
+    disableUndoButton(true);
+    disableSafeClickButton(true);
+    clearSafeClicksCounts();
 }
 
 function endGameAndRevealMines(currI, currJ) {

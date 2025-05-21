@@ -7,6 +7,7 @@
 //       Global Game State       //
 // ============================= //
 var gBoard          = [];
+var gUndoStack      = [];
 var gHintedCells    = [];
 var gHintTimeoutIds = [];
 
@@ -41,18 +42,20 @@ var gGame = {
 // ============================= //
 //           Constants           //
 // ============================= //
-const EMPTY      = '\u00A0';
-const BOMB       = '💣';
-const FLAG       = '🚩';
-const ERROR      = '❌';
-const LIVE       = '❤️';
-const HINT       = '💡';
-const TROPHY     = '🏆';
-const START_GAME = '😊';
-const WIN_GAME   = '😎';
-const LOSE_GAME  = '😖';
-const M_SECONDS  = 1000;
-const PAD_ZEROS  = 3;
+const EMPTY       = '\u00A0';
+const BOMB        = '💣';
+const FLAG        = '🚩';
+const ERROR       = '❌';
+const LIVE        = '❤️';
+const HINT        = '💡';
+const TROPHY      = '🏆';
+const THEME       = '🌗';
+const START_GAME  = '😊';
+const WIN_GAME    = '😎';
+const LOSE_GAME   = '😖';
+const M_SECONDS   = 1000;
+const PAD_ZEROS   = 3;
+const TOTAL_HINTS = 3;
 const RESET_BEST_SCORE = '🗑';
 
 // --- //

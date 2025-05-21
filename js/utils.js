@@ -69,6 +69,8 @@ function removeNumberClasses(elCell) {
 //         Timer Logic         //
 // =========================== //
 function startTimer() {
+    if (gTimer.gTimerInterval !== null) return;
+
     gTimer.gTimerInterval = setInterval(() => {
         gGame.secsPassed++;
         updateTimerDisplay();
