@@ -402,7 +402,7 @@ function undoMove() {
     const isDisabled = gUndoStack.length === 0;
     disableUndoButton(isDisabled);
 
-    if (gGame.revealedCount === 0) {
+    if (gGame.isFirstClick) {
         disableSafeClickButton(true);
         clearSafeClicksCounts();
     } else {
