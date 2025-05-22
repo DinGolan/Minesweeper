@@ -225,10 +225,8 @@ function renderBoard(selector) {
 //        First Click Logic        //
 // =============================== //
 function onCellClicked(elCell, i, j) {
-    saveGameState(); // Store for Reversal Action //
-    
     if (gGame.isFirstClick) handleFirstClick(i, j);
-    
+
     if (!gGame.isOn) return;
 
     if (gGame.isHintMode) {
@@ -236,6 +234,8 @@ function onCellClicked(elCell, i, j) {
         handleHintMode(i, j);
         return;
     }
+
+    saveGameState(); // Store for Reversal Action //
 
     const currCell = gBoard[i][j];
     if (currCell.isMarked || currCell.isRevealed) return;
@@ -457,12 +457,12 @@ function expandReveal(board, currI, currJ) {
 // ============================= //
 //         Marking Logic         //
 // ============================= //
-function onCellMarked(elCell, i, j) {
-    saveGameState(); // Store for Reversal Action //
-    
+function onCellMarked(elCell, i, j) {    
     if (gGame.isFirstClick) handleFirstClick(i, j);
 
     if (!gGame.isOn) return;
+
+    saveGameState(); // Store for Reversal Action //
 
     const currCell = gBoard[i][j];
     if (currCell.isRevealed) return;

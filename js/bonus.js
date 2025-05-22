@@ -220,6 +220,8 @@ function updateSafeClicksCounts() {
 
 function onSafeClick() {
     if (!gGame.isOn || !gGame.safeClicksLeft) return;
+    
+    saveGameState(); // Store for Reversal Action //
 
     disableSafeClickButton(true); // Prevent rapid consecutive clicks by temporarily disabling the button //
 
@@ -333,12 +335,6 @@ function resetToggleTheme() {
 // =============================== //
 //         Save Game State         //
 // =============================== //
-// [TODO] //
-/**
- * [1] - There’s no need to save the previous state when clicking on a hint cell or a safe click cell.
- * [2] - There is an issue with `Undo` & `Safe Click`.
- * [3] - Search the `Debug` sections.
- **/
 function saveGameState() {
     let boardCopy = copyBoard();
     let gameCopy  = copyGameVariable();
@@ -394,40 +390,26 @@ function copyGameVariable() {
 
 function undoMove() {
     if (!gUndoStack.length) return;
-
-    // [Debug] //
-    logUndoStack();
-
+     
     const prevState = gUndoStack.pop();
     gBoard          = prevState.board;
 
-    assignGameStateExceptTimer(prevState.game); // Copy saved values back into gGame (Except gGame.secsPassed)  //
-    
-    // [Debug] //
-    /**
-     * Explanations :
-     * - Reset hint mode to avoid accidental activation after undo.
-     * - Reset hint element to avoid accidental activation after undo.
-     * - Remove any active hint classes.
-     * 
-     * if (gGame.isHintMode) {
-     *     gGame.isHintMode   = false;
-     *     gGame.elHintActive = null;
-     *     document.querySelectorAll('.hints-container .hint.active').forEach(elHint => {
-     *         elHint.classList.remove('active');
-     *     });
-     * }
-     **/
+    assignGameStateExceptTimer(prevState.game); // Copy saved values back into gGame (Except gGame.secsPassed) //
+    detectAndFixFirstClick();
+
     renderPrevGame();
 
     const isDisabled = gUndoStack.length === 0;
     disableUndoButton(isDisabled);
 
-    if (gGame.isFirstClick) {
+    if (gGame.revealedCount === 0) {
         disableSafeClickButton(true);
         clearSafeClicksCounts();
+    } else {
+        disableSafeClickButton(gGame.safeClicksLeft === 0);
+        updateSafeClicksCounts();
     }
-}
+} 
 
 function assignGameStateExceptTimer(restoredGame) {
     gGame.isOn           = restoredGame.isOn;
@@ -439,6 +421,12 @@ function assignGameStateExceptTimer(restoredGame) {
     gGame.livesLeft      = restoredGame.livesLeft;
     gGame.hintsLeft      = restoredGame.hintsLeft;
     gGame.safeClicksLeft = restoredGame.safeClicksLeft;
+}
+
+function detectAndFixFirstClick() {
+    if (gGame.revealedCount === 0 && gGame.markedCount === 0 && !gGame.isFirstClick) {
+        gGame.isFirstClick = true;
+    }
 }
 
 function renderPrevGame() {
@@ -463,9 +451,9 @@ function logUndoStack() {
         console.log('Undo Stack [' + idx + ']:');
 
         let flatBoard = [];
-        for (var i = 0; i < gLevel.SIZE; i++) {
-            for (var j = 0; j < gLevel.SIZE; j++) {
-                var prevCell = prevState.board[i][j];
+        for (let i = 0; i < gLevel.SIZE; i++) {
+            for (let j = 0; j < gLevel.SIZE; j++) {
+                let prevCell = prevState.board[i][j];
                 flatBoard.push({
                     row: i,
                     col: j,
@@ -478,6 +466,6 @@ function logUndoStack() {
         }
 
         console.table(flatBoard);
-        console.log('Game state:', state.game);
+        console.log('Game state:', prevState.game);
     }
 }
