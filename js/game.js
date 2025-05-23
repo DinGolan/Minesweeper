@@ -96,6 +96,8 @@ function resetGameVars() {
     gGame.livesLeft      = 3;
     gGame.hintsLeft      = 3;
     gGame.safeClicksLeft = 3;
+    gGame.isManualMode   = false;
+    gGame.manualPlacedMines = 0;
 }
 
 function resetDOM() {
@@ -124,6 +126,7 @@ function resetDOM() {
 
     disableSafeClickButton(true);
     disableUndoButton(true);
+    disableManualModeButton(false);
     updateSafeClicksCounts();
 
     hideMessage();
@@ -135,6 +138,7 @@ function resetTimersAndIntervals() {
     clearHintTimeouts();
     clearSafeClickTimeout();
     clearSafeFadeoutTimeout();
+    clearManualFadeTimeouts();
 }
 
 function onRestart() {
@@ -225,17 +229,27 @@ function renderBoard(selector) {
 //        First Click Logic        //
 // =============================== //
 function onCellClicked(elCell, i, j) {
+    // Manual Mode //
+    if (gGame.isManualMode) {
+        placeMineManually(i, j);
+        return;
+    }
+
+    // First Click //
     if (gGame.isFirstClick) handleFirstClick(i, j);
 
+    // Game is Off //
     if (!gGame.isOn) return;
 
+    // Hint Mode //
     if (gGame.isHintMode) {
         clearHintTimeouts();
         handleHintMode(i, j);
         return;
     }
 
-    saveGameState(); // Store for Reversal Action //
+    // Store for Reversal Action //
+    saveGameState();
 
     const currCell = gBoard[i][j];
     if (currCell.isMarked || currCell.isRevealed) return;
@@ -264,6 +278,7 @@ function handleFirstClick(i, j) {
 
     disableSafeClickButton(false);
     updateSafeClicksCounts();
+    disableManualModeButton(true);
 }
 
 function isMineCountValid() {

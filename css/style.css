@@ -349,6 +349,11 @@ body.dark-mode .safe-clicks-count {
     opacity: 0.88;
 }
 
+.minesweeper-board td.cell-mine.fadeout {
+    background-color: transparent;
+    color: transparent;
+}
+
 .minesweeper-board td.cell-mine-clicked {
     background-color: #e60000;
     color: var(--text-dark);
@@ -481,6 +486,35 @@ body.dark-mode .safe-clicks-count {
 .control-buttons-container .inline-buttons .undo-btn:disabled {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     background-color: #e67e00;
+    cursor: default;
+    filter: none;
+    opacity: 0.4;
+}
+
+/* --- */
+
+/* Manual Mode */
+.control-buttons-container .inline-buttons .manual-mode-btn {
+    border: none;
+    border-radius: 12px;
+    background-color: #009688;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    color: white;
+    cursor: pointer;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 14px 26px;
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+
+.control-buttons-container .inline-buttons .manual-mode-btn:hover {
+    background-color: #00796b;
+}
+
+.control-buttons-container .inline-buttons .manual-mode-btn:disabled {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background-color: #00796b;
     cursor: default;
     filter: none;
     opacity: 0.4;

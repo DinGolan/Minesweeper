@@ -405,6 +405,7 @@ function undoMove() {
     if (gGame.isFirstClick) {
         disableSafeClickButton(true);
         clearSafeClicksCounts();
+        disableManualModeButton(false);
     } else {
         disableSafeClickButton(gGame.safeClicksLeft === 0);
         updateSafeClicksCounts();
@@ -420,7 +421,7 @@ function assignGameStateExceptTimer(restoredGame) {
     gGame.revealedCount  = restoredGame.revealedCount;
     gGame.livesLeft      = restoredGame.livesLeft;
     gGame.hintsLeft      = restoredGame.hintsLeft;
-    gGame.safeClicksLeft = restoredGame.safeClicksLeft;
+    gGame.safeClicksLeft = restoredGame.safeClicksLeft; 
 }
 
 function detectAndFixFirstClick() {
@@ -468,4 +469,91 @@ function logUndoStack() {
         console.table(flatBoard);
         console.log('Game state:', prevState.game);
     }
+}
+
+// --- //
+
+// =========================== //
+//         Manual Mode         //
+// =========================== //
+function onManualMode() {
+    gGame.isManualMode      = true;
+    gGame.manualPlacedMines = 0;
+
+    resetMinesFromBoard();
+
+    updateManualMinesCounter();
+    disableManualModeButton(true);
+
+    // Reset these values when we returned to the beginning of the game via Undo //
+    gGame.isFirstClick = true;
+    gGame.isOn         = false;
+}
+
+function resetMinesFromBoard() {
+    for (let i = 0; i < gLevel.SIZE; i++) {
+        for (let j = 0; j < gLevel.SIZE; j++) {
+            const currCell  = gBoard[i][j];
+            currCell.isMine = false;
+            currCell.minesAroundCount = 0;
+        }
+    }
+}
+
+function placeMineManually(i, j) {
+    const manualCell = gBoard[i][j];
+
+    if (manualCell.isMine) return;
+
+    manualCell.isMine = true;
+    
+    gGame.manualPlacedMines++;
+    const elManualBtn = document.querySelector('.manual-mode-btn');
+    elManualBtn.title = `Select ${gLevel.MINES - gGame.manualPlacedMines} Cells to Place Mines`;
+    updateManualMinesCounter();
+
+    const className  = getClassName(i, j);
+    const elCell     = document.querySelector(`.${className}`);
+    elCell.innerText = BOMB;
+    elCell.classList.add('cell-mine');
+
+    clearManualFadeTimeouts();
+    const manualTimeoutId_1 = setTimeout(() => {
+        elCell.classList.add('fadeout');
+    }, Math.floor(M_SECONDS / 2));
+
+    const manualTimeoutId_2 = setTimeout(() => {
+        elCell.innerText = EMPTY;
+        elCell.classList.remove('cell-mine', 'fadeout');
+    }, M_SECONDS);
+
+    gManualTimeoutIds.push(manualTimeoutId_1, manualTimeoutId_2);
+
+    if (gGame.manualPlacedMines === gLevel.MINES) {
+        setMinesNegsCount(gBoard);
+        startTimer();
+
+        gGame.isManualMode = false;
+        gGame.isFirstClick = false;
+        gGame.isOn         = true;
+    }
+}
+
+function updateManualMinesCounter() {
+    const elMinesCounter     = document.querySelector('.minesweeper-counter');
+    elMinesCounter.innerText = String(gGame.manualPlacedMines).padStart(PAD_ZEROS, '0');
+}
+
+function disableManualModeButton(isDisabled) {
+    const elManualBtn    = document.querySelector('.manual-mode-btn');
+    elManualBtn.title    = `Select ${gLevel.MINES - gGame.manualPlacedMines} Cells to Place Mines`;
+    elManualBtn.disabled = isDisabled;
+}
+
+function clearManualFadeTimeouts() {
+    for (let i = 0; i < gManualTimeoutIds.length; i++) {
+        if (gManualTimeoutIds[i]) clearTimeout(gManualTimeoutIds[i]);
+    }
+
+    gManualTimeoutIds = [];
 }

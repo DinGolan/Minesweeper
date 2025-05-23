@@ -6,10 +6,11 @@
 // ============================= //
 //       Global Game State       //
 // ============================= //
-var gBoard          = [];
-var gUndoStack      = [];
-var gHintedCells    = [];
-var gHintTimeoutIds = [];
+var gBoard            = [];
+var gUndoStack        = [];
+var gHintedCells      = [];
+var gHintTimeoutIds   = [];
+var gManualTimeoutIds = [];
 
 var gTimer = {
     gTimerInterval:        null,
@@ -34,7 +35,9 @@ var gGame = {
     revealedCount:  0,
     livesLeft:      3,
     hintsLeft:      3,
-    safeClicksLeft: 3
+    safeClicksLeft: 3,
+    isManualMode:   false,
+    manualPlacedMines: 0
 };
 
 // --- //
