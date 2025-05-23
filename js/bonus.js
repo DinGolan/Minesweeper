@@ -421,7 +421,7 @@ function assignGameStateExceptTimer(restoredGame) {
     gGame.revealedCount  = restoredGame.revealedCount;
     gGame.livesLeft      = restoredGame.livesLeft;
     gGame.hintsLeft      = restoredGame.hintsLeft;
-    gGame.safeClicksLeft = restoredGame.safeClicksLeft; 
+    gGame.safeClicksLeft = restoredGame.safeClicksLeft;
 }
 
 function detectAndFixFirstClick() {

@@ -86,17 +86,17 @@ function resetGameVars() {
     gUndoStack      = [];
     gHintedCells    = [];
 
-    gGame.isOn           = false;
-    gGame.isHintMode     = false;
-    gGame.isFirstClick   = true;
-    gGame.elHintActive   = null;
-    gGame.secsPassed     = 0;
-    gGame.markedCount    = 0;
-    gGame.revealedCount  = 0;
-    gGame.livesLeft      = 3;
-    gGame.hintsLeft      = 3;
-    gGame.safeClicksLeft = 3;
-    gGame.isManualMode   = false;
+    gGame.isOn              = false;
+    gGame.isHintMode        = false;
+    gGame.isFirstClick      = true;
+    gGame.elHintActive      = null;
+    gGame.secsPassed        = 0;
+    gGame.markedCount       = 0;
+    gGame.revealedCount     = 0;
+    gGame.livesLeft         = 3;
+    gGame.hintsLeft         = 3;
+    gGame.safeClicksLeft    = 3;
+    gGame.isManualMode      = false;
     gGame.manualPlacedMines = 0;
 }
 
