@@ -98,6 +98,8 @@ function resetGameVars() {
     gGame.safeClicksLeft    = 3;
     gGame.isManualMode      = false;
     gGame.manualPlacedMines = 0;
+    gGame.isMegaHintMode    = false;
+    gGame.megaHintStartPos  = null;
 }
 
 function resetDOM() {
@@ -127,6 +129,7 @@ function resetDOM() {
     disableSafeClickButton(true);
     disableUndoButton(true);
     disableManualModeButton(false);
+    disableMegaHintButton(true);
     updateSafeClicksCounts();
 
     hideMessage();
@@ -139,6 +142,7 @@ function resetTimersAndIntervals() {
     clearSafeClickTimeout();
     clearSafeFadeoutTimeout();
     clearManualFadeTimeouts();
+    clearMegaHintTimeouts();
 }
 
 function onRestart() {
@@ -235,6 +239,12 @@ function onCellClicked(elCell, i, j) {
         return;
     }
 
+    // Mega Hint //
+    if (gGame.isMegaHintMode) {
+        handleMegaHintCellClick(i, j);
+        return;
+    }
+
     // First Click //
     if (gGame.isFirstClick) handleFirstClick(i, j);
 
@@ -279,6 +289,7 @@ function handleFirstClick(i, j) {
     disableSafeClickButton(false);
     updateSafeClicksCounts();
     disableManualModeButton(true);
+    disableMegaHintButton(false);
 }
 
 function isMineCountValid() {

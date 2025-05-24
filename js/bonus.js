@@ -85,18 +85,21 @@ function revealHintCells(gHintedCells) {
 
         if (negCell.isRevealed) continue;
 
-        if (negCell.isMine) {
-            elNegCell.innerText = BOMB;
-        }
-        else if (negCell.minesAroundCount > 0) {
-            elNegCell.innerText = negCell.minesAroundCount;
-            elNegCell.classList.add(`cell-${negCell.minesAroundCount}`);
-        }
-        else {
-            elNegCell.innerText = EMPTY;
-        }
-
+        renderCellContent(negCell, elNegCell);
         elNegCell.classList.add('cell-temp-reveal');
+    }
+}
+
+function renderCellContent(currCell, elCell) {
+    if (currCell.isMine) {
+        elCell.innerText = BOMB;
+    }
+    else if (currCell.minesAroundCount > 0) {
+        elCell.innerText = currCell.minesAroundCount;
+        elCell.classList.add(`cell-${currCell.minesAroundCount}`);
+    }
+    else {
+        elCell.innerText = EMPTY;
     }
 }
 
@@ -177,14 +180,15 @@ function renderBestScoreDisplay() {
 
     if (bestScore !== null) {
         elBestScore.innerText = `${TROPHY} Best Score : ${String(bestScore).padStart(PAD_ZEROS, '0')}`;
+        elResetBtn.title      = '[Enabled] Reset Best Score';
         elResetBtn.classList.remove('disabled');
     } else {
         elBestScore.innerText = `${TROPHY} Best Score : —`;
+        elResetBtn.title      = '[Disabled] Reset Best Score';
         elResetBtn.classList.add('disabled');
     }
     
     elResetBtn.innerText = RESET_BEST_SCORE;
-    elResetBtn.title     = 'Reset Best Score';
 }
 
 function resetBestScore() {
@@ -204,7 +208,8 @@ function resetBestScore() {
 function disableSafeClickButton(isDisabled) {
     const elSafeBtn    = document.querySelector('.safe-click-btn');
     elSafeBtn.disabled = isDisabled;
-    elSafeBtn.title    = 'Safe Click';
+    elSafeBtn.title    = isDisabled ? '[Disabled]' : '[Enabled]';
+    elSafeBtn.title   += ' Safe Click';
 }
 
 function updateSafeClicksCounts() {
@@ -376,15 +381,17 @@ function copyBoard() {
 
 function copyGameVariable() {
     return {
-        isOn:           gGame.isOn,
-        isHintMode:     gGame.isHintMode,
-        isFirstClick:   gGame.isFirstClick,
-        elHintActive:   gGame.elHintActive,
-        markedCount:    gGame.markedCount,
-        revealedCount:  gGame.revealedCount,
-        livesLeft:      gGame.livesLeft,
-        hintsLeft:      gGame.hintsLeft,
-        safeClicksLeft: gGame.safeClicksLeft
+        isOn:             gGame.isOn,
+        isHintMode:       gGame.isHintMode,
+        isFirstClick:     gGame.isFirstClick,
+        elHintActive:     gGame.elHintActive,
+        markedCount:      gGame.markedCount,
+        revealedCount:    gGame.revealedCount,
+        livesLeft:        gGame.livesLeft,
+        hintsLeft:        gGame.hintsLeft,
+        safeClicksLeft:   gGame.safeClicksLeft,
+        isMegaHintMode:   gGame.isMegaHintMode,
+        megaHintStartPos: gGame.megaHintStartPos ? { ...gGame.megaHintStartPos } : null
     };
 }
 
@@ -394,7 +401,7 @@ function undoMove() {
     const prevState = gUndoStack.pop();
     gBoard          = prevState.board;
 
-    assignGameStateExceptTimer(prevState.game); // Copy saved values back into gGame (Except gGame.secsPassed) //
+    assignGameState(prevState.game);
     detectAndFixFirstClick();
 
     renderPrevGame();
@@ -412,16 +419,26 @@ function undoMove() {
     }
 } 
 
-function assignGameStateExceptTimer(restoredGame) {
-    gGame.isOn           = restoredGame.isOn;
-    gGame.isHintMode     = restoredGame.isHintMode;
-    gGame.isFirstClick   = restoredGame.isFirstClick;
-    gGame.elHintActive   = restoredGame.elHintActive;
-    gGame.markedCount    = restoredGame.markedCount;
-    gGame.revealedCount  = restoredGame.revealedCount;
-    gGame.livesLeft      = restoredGame.livesLeft;
-    gGame.hintsLeft      = restoredGame.hintsLeft;
-    gGame.safeClicksLeft = restoredGame.safeClicksLeft;
+function assignGameState(restoredGame) {
+    /**
+     * Exclude :
+     * [1] - gGame.secsPassed
+     * [2] - gGame.isManualMode
+     * [3] - gGame.manualPlacedMines
+     * [4] - gGame.isMegaHintMode
+     * [5] - gGame.megaHintStartPos
+     **/
+    gGame.isOn             = restoredGame.isOn;
+    gGame.isHintMode       = restoredGame.isHintMode;
+    gGame.isFirstClick     = restoredGame.isFirstClick;
+    gGame.elHintActive     = restoredGame.elHintActive;
+    gGame.markedCount      = restoredGame.markedCount;
+    gGame.revealedCount    = restoredGame.revealedCount;
+    gGame.livesLeft        = restoredGame.livesLeft;
+    gGame.hintsLeft        = restoredGame.hintsLeft;
+    gGame.safeClicksLeft   = restoredGame.safeClicksLeft;
+    gGame.isMegaHintMode   = restoredGame.isMegaHintMode;
+    gGame.megaHintStartPos = restoredGame.megaHintStartPos ? { ...restoredGame.megaHintStartPos } : null;
 }
 
 function detectAndFixFirstClick() {
@@ -431,18 +448,34 @@ function detectAndFixFirstClick() {
 }
 
 function renderPrevGame() {
+    // Board //
     renderBoard('.minesweeper-board');
+
+    // Hints //
     renderHints();
+
+    // Lives //
     updateLivesDisplay();
+
+    // Mines Counter //
     updateMinesCounter();
+
+    // Face Display //
     updateFaceDisplay(START_GAME);
+
+    // Safe Clicks //
     updateSafeClicksCounts();
+
+    // Mega Hints //
+    const toDisableMegaHint = gGame.isFirstClick || gGame.isMegaHintMode;
+    disableMegaHintButton(toDisableMegaHint);
 }
 
 function disableUndoButton(isDisabled) {
     const elUndoBtn    = document.querySelector('.undo-btn');
     elUndoBtn.disabled = isDisabled;
-    elUndoBtn.title    = 'Undo Last Move';
+    elUndoBtn.title    = isDisabled ? '[Disabled]' : '[Enabled]';
+    elUndoBtn.title   += ' Undo Last Move';
 }
 
 // [Debug] //
@@ -546,8 +579,14 @@ function updateManualMinesCounter() {
 
 function disableManualModeButton(isDisabled) {
     const elManualBtn    = document.querySelector('.manual-mode-btn');
-    elManualBtn.title    = `Select ${gLevel.MINES - gGame.manualPlacedMines} Cells to Place Mines`;
     elManualBtn.disabled = isDisabled;
+
+    const leftManualPlacedMines = gLevel.MINES - gGame.manualPlacedMines;
+    if (!leftManualPlacedMines || isDisabled) {
+        elManualBtn.title = `[Disabled] You Can't Select Cells to Place Mines`;
+    } else {
+        elManualBtn.title = `[Enabled] Select ${leftManualPlacedMines} Cells to Place Mines`;
+    }
 }
 
 function clearManualFadeTimeouts() {
@@ -556,4 +595,115 @@ function clearManualFadeTimeouts() {
     }
 
     gManualTimeoutIds = [];
+}
+
+// --- //
+
+// ========================= //
+//         Mega Hint         //
+// ========================= //
+function onMegaHintClick() {
+    if (gGame.isMegaHintMode || gGame.isFirstClick || !gGame.isOn) return;
+
+    saveGameState(); // Store for Reversal Action //
+
+    gGame.isMegaHintMode   = true;
+    gGame.megaHintStartPos = null;
+
+    disableMegaHintButton(true);
+}
+
+function handleMegaHintCellClick(i, j) {
+    const currPos = { i, j };
+
+    if (!gGame.megaHintStartPos) {
+        gGame.megaHintStartPos = currPos;
+        return;
+    }
+
+    // [Error] The same cell //
+    if (currPos.i === gGame.megaHintStartPos.i &&
+        currPos.j === gGame.megaHintStartPos.j) return;
+
+    const startPos = gGame.megaHintStartPos;
+    const endPos   = currPos;
+
+    const cellsToReveal = getCellsInRect(startPos, endPos);
+    revealMegaHintArea(cellsToReveal);
+
+    gGame.isMegaHintMode   = false;
+    gGame.megaHintStartPos = null;
+
+    clearMegaHintTimeouts();
+    const megaHintTimeoutId = setTimeout(() => {
+        hideMegaHintArea(cellsToReveal);
+    }, M_SECONDS * 1.5);
+
+    gMegaHintTimeoutIds.push(megaHintTimeoutId);
+}
+
+function getCellsInRect(startPos, endPos) {
+    const cellsMegaHint = [];
+
+    const startI = Math.min(startPos.i, endPos.i);
+    const endI   = Math.max(startPos.i, endPos.i);
+    const startJ = Math.min(startPos.j, endPos.j);
+    const endJ   = Math.max(startPos.j, endPos.j);
+
+    for (let i = startI; i <= endI; i++) {
+        for (let j = startJ; j <= endJ; j++) {
+            const currPos = { i: i, j: j };
+            cellsMegaHint.push(currPos);
+        }
+    }
+
+    return cellsMegaHint;
+}
+
+function revealMegaHintArea(cellsMegaHint) {
+    for (const currPos of cellsMegaHint) {
+        const currCell  = gBoard[currPos.i][currPos.j];
+        const className = getClassName(currPos.i, currPos.j); 
+        const elCell   = document.querySelector(`.${className}`);
+
+        if (currCell.isRevealed) continue;
+
+        renderCellContent(currCell, elCell);
+        elCell.classList.add('cell-temp-reveal');
+    }
+}
+
+function hideMegaHintArea(cellsMegaHint) {
+    for (const currPos of cellsMegaHint) {
+        const currCell  = gBoard[currPos.i][currPos.j];
+        const className = getClassName(currPos.i, currPos.j); 
+        const elCell   = document.querySelector(`.${className}`);
+
+        if (currCell.isRevealed) continue;
+        
+        elCell.classList.add('fadeout');
+
+        const megaHintTimeoutId = setTimeout(() => {
+            elCell.innerText = currCell.isMarked ? FLAG : EMPTY;
+            elCell.classList.remove('cell-temp-reveal', 'fadeout');
+            removeNumberClasses(elCell);
+        }, Math.floor(M_SECONDS / 2));
+        
+        gMegaHintTimeoutIds.push(megaHintTimeoutId);
+    }
+}
+
+function clearMegaHintTimeouts() {
+    for (let i = 0; i < gMegaHintTimeoutIds.length; i++) {
+        if (gMegaHintTimeoutIds[i]) clearTimeout(gMegaHintTimeoutIds[i]);
+    }
+
+    gMegaHintTimeoutIds = [];
+}
+
+function disableMegaHintButton(isDisabled) {
+    const elMegaBtn    = document.querySelector('.mega-hint-btn');
+    elMegaBtn.disabled = isDisabled;
+    elMegaBtn.title    = isDisabled ? '[Disabled]' : '[Enabled]';
+    elMegaBtn.title   += ' Mega Hint - Select Two Cells';
 }

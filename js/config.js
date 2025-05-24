@@ -6,17 +6,18 @@
 // ============================= //
 //       Global Game State       //
 // ============================= //
-var gBoard            = [];
-var gUndoStack        = [];
-var gHintedCells      = [];
-var gHintTimeoutIds   = [];
-var gManualTimeoutIds = [];
+var gBoard              = [];
+var gUndoStack          = [];
+var gHintedCells        = [];
+var gHintTimeoutIds     = [];
+var gManualTimeoutIds   = [];
+var gMegaHintTimeoutIds = [];
 
 var gTimer = {
     gTimerInterval:        null,
     gMineResetTimeoutId:   null,
     gSafeClickTimeoutId:   null,
-    gSafeFadeoutTimeoutId: null
+    gSafeFadeoutTimeoutId: null,
 };
 
 var gLevel = {
@@ -37,7 +38,9 @@ var gGame = {
     hintsLeft:         3,
     safeClicksLeft:    3,
     isManualMode:      false,
-    manualPlacedMines: 0
+    manualPlacedMines: 0,
+    isMegaHintMode:    false,
+    megaHintStartPos:  null
 };
 
 // --- //
