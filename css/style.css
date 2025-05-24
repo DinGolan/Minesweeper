@@ -359,10 +359,11 @@ body.dark-mode .safe-clicks-count {
     background: #ffcdcd;
     font-size: 1.5em;
     line-height: 1;
+    opacity: 0.88;
     padding: 0;
     text-align: center;
+    transition: background-color 0.5 ease;
     vertical-align: middle;
-    opacity: 0.88;
 }
 
 .minesweeper-board td.cell-mine.fadeout {
@@ -397,7 +398,6 @@ body.dark-mode .safe-clicks-count {
 .minesweeper-board td.cell-temp-reveal.fadeout {
     background-color: transparent;
     color: transparent;
-    transition: background-color 0.4s ease, color 0.4s ease;
 }
 
 /* --- */
@@ -572,6 +572,37 @@ body.dark-mode .safe-clicks-count {
 .control-buttons-container .inline-buttons .mega-hint-btn:disabled {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     background-color: #512da8;
+    cursor: default;
+    filter: none;
+    opacity: 0.4;
+}
+
+/* --- */
+
+/****************/
+/* EXTERMINATOR */
+/****************/
+.control-buttons-container .inline-buttons .exterminator-btn {
+    border: none;
+    border-radius: 12px;
+    background-color: #e53935;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    color: white;
+    cursor: pointer;
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 14px 26px;
+    transition: background-color 0.3s ease;
+    text-align: center;
+}
+
+.control-buttons-container .inline-buttons .exterminator-btn:hover {
+    background-color: #c62828;
+}
+
+.control-buttons-container .inline-buttons .exterminator-btn:disabled {
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    background-color: #c62828;
     cursor: default;
     filter: none;
     opacity: 0.4;

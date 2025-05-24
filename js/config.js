@@ -12,6 +12,7 @@ var gHintedCells        = [];
 var gHintTimeoutIds     = [];
 var gManualTimeoutIds   = [];
 var gMegaHintTimeoutIds = [];
+var gExterminatorFadeoutTimeoutIds = [];
 
 var gTimer = {
     gTimerInterval:        null,
@@ -27,20 +28,21 @@ var gLevel = {
 };
 
 var gGame = {
-    isOn:              false,
-    isHintMode:        false,
-    isFirstClick:      true,
-    elHintActive:      null,
-    secsPassed:        0,
-    markedCount:       0,
-    revealedCount:     0,
-    livesLeft:         3,
-    hintsLeft:         3,
-    safeClicksLeft:    3,
-    isManualMode:      false,
-    manualPlacedMines: 0,
-    isMegaHintMode:    false,
-    megaHintStartPos:  null
+    isOn:               false,
+    isHintMode:         false,
+    isFirstClick:       true,
+    elHintActive:       null,
+    secsPassed:         0,
+    markedCount:        0,
+    revealedCount:      0,
+    livesLeft:          3,
+    hintsLeft:          3,
+    safeClicksLeft:     3,
+    isManualMode:       false,
+    manualPlacedMines:  0,
+    isMegaHintMode:     false,
+    megaHintStartPos:   null,
+    isUsedExterminator: false
 };
 
 // --- //
@@ -62,7 +64,8 @@ const LOSE_GAME   = '😖';
 const M_SECONDS   = 1000;
 const PAD_ZEROS   = 3;
 const TOTAL_HINTS = 3;
-const RESET_BEST_SCORE = '🗑';
+const RESET_BEST_SCORE    = '🗑';
+const NUM_MINES_TO_REMOVE = 3;
 
 // --- //
 

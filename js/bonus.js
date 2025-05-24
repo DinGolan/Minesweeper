@@ -212,15 +212,9 @@ function disableSafeClickButton(isDisabled) {
     elSafeBtn.title   += ' Safe Click';
 }
 
-function updateSafeClicksCounts() {
-    const elSafeCount = document.querySelector('.safe-clicks-count');
-    
-    if (!gGame.isOn) {
-        elSafeCount.innerText = '';
-        return;
-    }
-    
-    elSafeCount.innerText = `${gGame.safeClicksLeft} Clicks Available`;
+function updateSafeClicksCounts(safeClickCountsContent) {
+    const elSafeCount     = document.querySelector('.safe-clicks-count');
+    elSafeCount.innerText = safeClickCountsContent;
 }
 
 function onSafeClick() {
@@ -297,11 +291,6 @@ function hideSafeCellContent(safeCellPos) {
     }, Math.floor(M_SECONDS / 2));
 }
 
-function clearSafeClicksCounts() {
-    const elSafeCount     = document.querySelector('.safe-clicks-count');
-    elSafeCount.innerText = '';
-}
-
 function clearSafeClickTimeout() {
     if (gTimer.gSafeClickTimeoutId) {
         clearTimeout(gTimer.gSafeClickTimeoutId);
@@ -350,9 +339,7 @@ function saveGameState() {
     });
 
     const elUndoBtn = document.querySelector('.undo-btn');
-    if (elUndoBtn.disabled) {
-        disableUndoButton(false);
-    }
+    if (elUndoBtn.disabled) disableUndoButton(false);
 }
 
 function copyBoard() {
@@ -381,17 +368,18 @@ function copyBoard() {
 
 function copyGameVariable() {
     return {
-        isOn:             gGame.isOn,
-        isHintMode:       gGame.isHintMode,
-        isFirstClick:     gGame.isFirstClick,
-        elHintActive:     gGame.elHintActive,
-        markedCount:      gGame.markedCount,
-        revealedCount:    gGame.revealedCount,
-        livesLeft:        gGame.livesLeft,
-        hintsLeft:        gGame.hintsLeft,
-        safeClicksLeft:   gGame.safeClicksLeft,
-        isMegaHintMode:   gGame.isMegaHintMode,
-        megaHintStartPos: gGame.megaHintStartPos ? { ...gGame.megaHintStartPos } : null
+        isOn:               gGame.isOn,
+        isHintMode:         gGame.isHintMode,
+        isFirstClick:       gGame.isFirstClick,
+        elHintActive:       gGame.elHintActive,
+        markedCount:        gGame.markedCount,
+        revealedCount:      gGame.revealedCount,
+        livesLeft:          gGame.livesLeft,
+        hintsLeft:          gGame.hintsLeft,
+        safeClicksLeft:     gGame.safeClicksLeft,
+        isMegaHintMode:     gGame.isMegaHintMode,
+        megaHintStartPos:   gGame.megaHintStartPos ? { ...gGame.megaHintStartPos } : null,
+        isUsedExterminator: gGame.isUsedExterminator
     };
 }
 
@@ -404,19 +392,8 @@ function undoMove() {
     assignGameState(prevState.game);
     detectAndFixFirstClick();
 
+    resetPartTimersAndIntervals();
     renderPrevGame();
-
-    const isDisabled = gUndoStack.length === 0;
-    disableUndoButton(isDisabled);
-
-    if (gGame.isFirstClick) {
-        disableSafeClickButton(true);
-        clearSafeClicksCounts();
-        disableManualModeButton(false);
-    } else {
-        disableSafeClickButton(gGame.safeClicksLeft === 0);
-        updateSafeClicksCounts();
-    }
 } 
 
 function assignGameState(restoredGame) {
@@ -428,17 +405,18 @@ function assignGameState(restoredGame) {
      * [4] - gGame.isMegaHintMode
      * [5] - gGame.megaHintStartPos
      **/
-    gGame.isOn             = restoredGame.isOn;
-    gGame.isHintMode       = restoredGame.isHintMode;
-    gGame.isFirstClick     = restoredGame.isFirstClick;
-    gGame.elHintActive     = restoredGame.elHintActive;
-    gGame.markedCount      = restoredGame.markedCount;
-    gGame.revealedCount    = restoredGame.revealedCount;
-    gGame.livesLeft        = restoredGame.livesLeft;
-    gGame.hintsLeft        = restoredGame.hintsLeft;
-    gGame.safeClicksLeft   = restoredGame.safeClicksLeft;
-    gGame.isMegaHintMode   = restoredGame.isMegaHintMode;
-    gGame.megaHintStartPos = restoredGame.megaHintStartPos ? { ...restoredGame.megaHintStartPos } : null;
+    gGame.isOn               = restoredGame.isOn;
+    gGame.isHintMode         = restoredGame.isHintMode;
+    gGame.isFirstClick       = restoredGame.isFirstClick;
+    gGame.elHintActive       = restoredGame.elHintActive;
+    gGame.markedCount        = restoredGame.markedCount;
+    gGame.revealedCount      = restoredGame.revealedCount;
+    gGame.livesLeft          = restoredGame.livesLeft;
+    gGame.hintsLeft          = restoredGame.hintsLeft;
+    gGame.safeClicksLeft     = restoredGame.safeClicksLeft;
+    gGame.isMegaHintMode     = restoredGame.isMegaHintMode;
+    gGame.megaHintStartPos   = restoredGame.megaHintStartPos ? { ...restoredGame.megaHintStartPos } : null;
+    gGame.isUsedExterminator = restoredGame.isUsedExterminator;
 }
 
 function detectAndFixFirstClick() {
@@ -447,9 +425,21 @@ function detectAndFixFirstClick() {
     }
 }
 
+function resetPartTimersAndIntervals() {
+    clearHintTimeouts();
+    clearSafeClickTimeout();
+    clearSafeFadeoutTimeout();
+    clearManualFadeoutTimeouts();
+    clearMegaHintTimeouts();
+    clearExterminatorTimeouts();
+}
+
 function renderPrevGame() {
     // Board //
     renderBoard('.minesweeper-board');
+
+    // Toggle (Radio Buttons) //
+    if (gGame.isFirstClick) toggleLevelSelectors(false);
 
     // Hints //
     renderHints();
@@ -463,12 +453,30 @@ function renderPrevGame() {
     // Face Display //
     updateFaceDisplay(START_GAME);
 
-    // Safe Clicks //
-    updateSafeClicksCounts();
+    // Safe Click //
+    const safeClickCountsContent = gGame.isFirstClick ? '' : `${gGame.safeClicksLeft} Clicks Available`;
+    if (gGame.isFirstClick) {
+        disableSafeClickButton(true);
+        updateSafeClicksCounts(safeClickCountsContent);
+    } else {
+        const toDisableSafeClick = gGame.safeClicksLeft === 0
+        disableSafeClickButton(toDisableSafeClick);
+        updateSafeClicksCounts(safeClickCountsContent);
+    }
+    
+    // Undo Button //
+    const toDisableUndo = gUndoStack.length === 0;
+    disableUndoButton(toDisableUndo);
+    
+    // Manual Mode //
+    if (gGame.isFirstClick) disableManualModeButton(false);
 
     // Mega Hints //
     const toDisableMegaHint = gGame.isFirstClick || gGame.isMegaHintMode;
     disableMegaHintButton(toDisableMegaHint);
+
+    // Exterminator //
+    disableExterminatorButton(gGame.isUsedExterminator);
 }
 
 function disableUndoButton(isDisabled) {
@@ -513,6 +521,8 @@ function onManualMode() {
     gGame.isManualMode      = true;
     gGame.manualPlacedMines = 0;
 
+    toggleLevelSelectors(true);
+
     resetMinesFromBoard();
 
     updateManualMinesCounter();
@@ -542,7 +552,7 @@ function placeMineManually(i, j) {
     
     gGame.manualPlacedMines++;
     const elManualBtn = document.querySelector('.manual-mode-btn');
-    elManualBtn.title = `Select ${gLevel.MINES - gGame.manualPlacedMines} Cells to Place Mines`;
+    elManualBtn.title = `[Enabled] Select ${gLevel.MINES - gGame.manualPlacedMines} Cells to Place Mines`;
     updateManualMinesCounter();
 
     const className  = getClassName(i, j);
@@ -550,7 +560,7 @@ function placeMineManually(i, j) {
     elCell.innerText = BOMB;
     elCell.classList.add('cell-mine');
 
-    clearManualFadeTimeouts();
+    clearManualFadeoutTimeouts();
     const manualTimeoutId_1 = setTimeout(() => {
         elCell.classList.add('fadeout');
     }, Math.floor(M_SECONDS / 2));
@@ -566,6 +576,7 @@ function placeMineManually(i, j) {
         setMinesNegsCount(gBoard);
         startTimer();
 
+        elManualBtn.title  = `[Disabled] You Can't Select Cells to Place Mines`;
         gGame.isManualMode = false;
         gGame.isFirstClick = false;
         gGame.isOn         = true;
@@ -582,14 +593,14 @@ function disableManualModeButton(isDisabled) {
     elManualBtn.disabled = isDisabled;
 
     const leftManualPlacedMines = gLevel.MINES - gGame.manualPlacedMines;
-    if (!leftManualPlacedMines || isDisabled) {
-        elManualBtn.title = `[Disabled] You Can't Select Cells to Place Mines`;
-    } else {
+    if (leftManualPlacedMines > 0) {
         elManualBtn.title = `[Enabled] Select ${leftManualPlacedMines} Cells to Place Mines`;
+    } else {
+        elManualBtn.title = `[Disabled] You Can't Select Cells to Place Mines`;
     }
 }
 
-function clearManualFadeTimeouts() {
+function clearManualFadeoutTimeouts() {
     for (let i = 0; i < gManualTimeoutIds.length; i++) {
         if (gManualTimeoutIds[i]) clearTimeout(gManualTimeoutIds[i]);
     }
@@ -614,7 +625,7 @@ function onMegaHintClick() {
 }
 
 function handleMegaHintCellClick(i, j) {
-    const currPos = { i, j };
+    const currPos = { i: i, j: j };
 
     if (!gGame.megaHintStartPos) {
         gGame.megaHintStartPos = currPos;
@@ -706,4 +717,102 @@ function disableMegaHintButton(isDisabled) {
     elMegaBtn.disabled = isDisabled;
     elMegaBtn.title    = isDisabled ? '[Disabled]' : '[Enabled]';
     elMegaBtn.title   += ' Mega Hint - Select Two Cells';
+}
+
+// --- //
+
+// ============================ //
+//         Exterminator         //
+// ============================ //
+function onExterminatorClick() {
+    if (gGame.isUsedExterminator || !gGame.isOn || gLevel.MINES <= NUM_MINES_TO_REMOVE) return;
+
+    saveGameState(); // Store for Reversal Action //
+
+    gGame.isUsedExterminator = true;
+    disableExterminatorButton(true);
+
+    const totalMinePositions = getRemovableMinePositions();
+    if (totalMinePositions.length <= NUM_MINES_TO_REMOVE) return;
+
+    const removedMinePositions = removeRandomMinesFromBoard(totalMinePositions);
+
+    clearExterminatorTimeouts();
+    hideRemovedMinesVisual(removedMinePositions);
+
+    setMinesNegsCount(gBoard);
+}
+
+function getRemovableMinePositions() {
+    const minesPositions = [];
+
+    for (let i = 0; i < gLevel.SIZE; i++) {
+        for (let j = 0; j < gLevel.SIZE; j++) {
+            const currCell = gBoard[i][j];
+            if (currCell.isMine && !currCell.isRevealed) {
+                const minePos = { i: i, j: j };
+                minesPositions.push(minePos);
+            }
+        }
+    }
+
+    return minesPositions;
+}
+
+function removeRandomMinesFromBoard(totalMinePositions) {
+    const removedMinePositions = [];
+
+    for (let i = 0; i < NUM_MINES_TO_REMOVE; i++) {
+        const randIdx = getRandomIntExclusive(0, totalMinePositions.length);
+        const randPos = totalMinePositions.splice(randIdx, 1)[0];
+
+        const randMineCell = gBoard[randPos.i][randPos.j];
+        randMineCell.isMine = false;
+        removedMinePositions.push(randPos);
+
+        const className = getClassName(randPos.i, randPos.j);
+        const elCell = document.querySelector(`.${className}`);
+
+        elCell.innerText = BOMB;
+        elCell.classList.add('cell-mine');
+
+        const exterminatorFadeoutTimeoutId = setTimeout(() => {
+            elCell.classList.add('fadeout');
+        }, M_SECONDS / 2);
+
+        gExterminatorFadeoutTimeoutIds.push(exterminatorFadeoutTimeoutId);
+    }
+
+    return removedMinePositions;
+}
+
+function clearExterminatorTimeouts() {
+    for (let i = 0; i < gExterminatorFadeoutTimeoutIds.length; i++) {
+        if (gExterminatorFadeoutTimeoutIds[i]) clearTimeout(gExterminatorFadeoutTimeoutIds[i]);
+    }
+    
+    gExterminatorFadeoutTimeoutIds = [];
+}
+
+function hideRemovedMinesVisual(removedMinePositions) {
+    const exterminatorFadeoutTimeoutId = setTimeout(() => {
+        for (const removedMinePos of removedMinePositions) {
+            const removedMineCell = gBoard[removedMinePos.i][removedMinePos.j];
+
+            const className = getClassName(removedMinePos.i, removedMinePos.j);
+            const elCell = document.querySelector(`.${className}`);
+
+            if (!removedMineCell.isRevealed) elCell.innerText = EMPTY;
+            elCell.classList.remove('cell-mine', 'fadeout');
+        }
+    }, M_SECONDS);
+
+    gExterminatorFadeoutTimeoutIds.push(exterminatorFadeoutTimeoutId);
+}
+
+function disableExterminatorButton(isDisabled) {
+    const elExterminatorBtn    = document.querySelector('.exterminator-btn');
+    elExterminatorBtn.disabled = isDisabled;
+    elExterminatorBtn.title    = isDisabled ? '[Disabled]' : '[Enabled]';
+    elExterminatorBtn.title   += ` Remove ${NUM_MINES_TO_REMOVE} Random Mines`;
 }

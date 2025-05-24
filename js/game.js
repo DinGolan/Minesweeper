@@ -48,7 +48,7 @@
 //        Level Selectors        //
 // ============================= //
 function onLevelChange(elLevel) {
-    if (gGame.isOn) return;
+    if (!gGame.isFirstClick) return;
 
     const selectedLevel = elLevel.value;
     const levelConfig   = LEVELS[selectedLevel];
@@ -73,7 +73,7 @@ function toggleLevelSelectors(isDisabled) {
 function onInit() {
     resetGameVars();
     resetDOM();
-    resetTimersAndIntervals();
+    resetAllTimersAndIntervals();
 
     gBoard = buildBoard();
     renderBoard('.minesweeper-board');
@@ -86,20 +86,21 @@ function resetGameVars() {
     gUndoStack      = [];
     gHintedCells    = [];
 
-    gGame.isOn              = false;
-    gGame.isHintMode        = false;
-    gGame.isFirstClick      = true;
-    gGame.elHintActive      = null;
-    gGame.secsPassed        = 0;
-    gGame.markedCount       = 0;
-    gGame.revealedCount     = 0;
-    gGame.livesLeft         = 3;
-    gGame.hintsLeft         = 3;
-    gGame.safeClicksLeft    = 3;
-    gGame.isManualMode      = false;
-    gGame.manualPlacedMines = 0;
-    gGame.isMegaHintMode    = false;
-    gGame.megaHintStartPos  = null;
+    gGame.isOn               = false;
+    gGame.isHintMode         = false;
+    gGame.isFirstClick       = true;
+    gGame.elHintActive       = null;
+    gGame.secsPassed         = 0;
+    gGame.markedCount        = 0;
+    gGame.revealedCount      = 0;
+    gGame.livesLeft          = 3;
+    gGame.hintsLeft          = 3;
+    gGame.safeClicksLeft     = 3;
+    gGame.isManualMode       = false;
+    gGame.manualPlacedMines  = 0;
+    gGame.isMegaHintMode     = false;
+    gGame.megaHintStartPos   = null;
+    gGame.isUsedExterminator = false;
 }
 
 function resetDOM() {
@@ -130,19 +131,23 @@ function resetDOM() {
     disableUndoButton(true);
     disableManualModeButton(false);
     disableMegaHintButton(true);
-    updateSafeClicksCounts();
+    disableExterminatorButton(true);
+
+    const safeClickCountsContent = '';
+    updateSafeClicksCounts(safeClickCountsContent);
 
     hideMessage();
 }
 
-function resetTimersAndIntervals() {
+function resetAllTimersAndIntervals() {
     stopTimer();
     clearMineTimeout();
     clearHintTimeouts();
     clearSafeClickTimeout();
     clearSafeFadeoutTimeout();
-    clearManualFadeTimeouts();
+    clearManualFadeoutTimeouts();
     clearMegaHintTimeouts();
+    clearExterminatorTimeouts();
 }
 
 function onRestart() {
@@ -287,9 +292,14 @@ function handleFirstClick(i, j) {
     gGame.isFirstClick = false;
 
     disableSafeClickButton(false);
-    updateSafeClicksCounts();
+
+    const safeClickCountsContent = `${gGame.safeClicksLeft} Clicks Available`;
+    updateSafeClicksCounts(safeClickCountsContent);
+
     disableManualModeButton(true);
     disableMegaHintButton(false);
+
+    if (gLevel.MINES > 3) disableExterminatorButton(false);
 }
 
 function isMineCountValid() {
@@ -576,9 +586,14 @@ function setGameOver(faceEmoji) {
     gGame.isOn = false;
     stopTimer();
 
-    disableUndoButton(true);
     disableSafeClickButton(true);
-    clearSafeClicksCounts();
+
+    const safeClickCountsContent = '';
+    updateSafeClicksCounts(safeClickCountsContent);
+
+    disableUndoButton(true);
+    disableMegaHintButton(true);
+    disableExterminatorButton(true);
 }
 
 function endGameAndRevealMines(currI, currJ) {
