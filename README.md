@@ -1,13 +1,17 @@
-# Minesweeper
+# 💣 Minesweeper 💣
 
-An advanced version of the classic Minesweeper game, developed as part of a Coding Academy sprint challenge.
+- An advanced version of the classic Minesweeper game, developed as part of a Coding Academy sprint challenge.
 
-## Overview
+## 🎮 Play the Game 🎮
 
-This project recreates the Minesweeper game, adding multiple features and challenges as described in the sprint instructions. 
-The goal is to implement a fully functional Minesweeper game, with extra gameplay options and an engaging UI.
+- Link : [Minesweeper](https://dingolan.github.io/Minesweeper/)
 
-## Features
+## 📋 Overview 📋
+
+- This project recreates the Minesweeper game, adding multiple features and challenges as described in the sprint instructions. 
+- The goal is to implement a fully functional Minesweeper game, with extra gameplay options and an engaging UI.
+
+## ✨ Features ✨
 
 - **Classic Minesweeper Gameplay** :
   Reveal all safe cells without triggering mines !
@@ -39,22 +43,23 @@ The goal is to implement a fully functional Minesweeper game, with extra gamepla
   - Best score tracking (local storage).
   - Recursive reveal of empty areas.
 
-## Getting Started
+## 🚀 Getting Started 🚀
 
-1. Clone the repository :
+[1] - Clone the repository :
     ```
     git clone https://github.com/<User Name>/minesweeper.git
     ```
 
-2. Open `index.html` in your browser.
+
+[2] - Open `index.html` in your browser.
 
 > The game is fully client-side.
 
-## Development Guidelines
+## 💻 Development Guidelines 💻
 
 - Use JavaScript (no frameworks required).
 - Modular and well-commented code.
 
-## Author
+## 👨‍🎓 Author 👨‍🎓
 
-Developed by Din Golan as part of Coding Academy Sprint.
+- Developed by Din Golan as part of Coding Academy Sprint.
