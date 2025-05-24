@@ -6,19 +6,19 @@
 // ============================= //
 //       Global Game State       //
 // ============================= //
-var gBoard              = [];
-var gUndoStack          = [];
-var gHintedCells        = [];
-var gHintTimeoutIds     = [];
-var gManualTimeoutIds   = [];
-var gMegaHintTimeoutIds = [];
-var gExterminatorFadeoutTimeoutIds = [];
+var gBoard       = [];
+var gUndoStack   = [];
+var gHintedCells = [];
 
 var gTimer = {
     gTimerInterval:        null,
     gMineResetTimeoutId:   null,
     gSafeClickTimeoutId:   null,
     gSafeFadeoutTimeoutId: null,
+    gHintTimeoutIds:       [],
+    gManualTimeoutIds:     [],
+    gMegaHintTimeoutIds:   [],
+    gExterminatorFadeoutTimeoutIds: []
 };
 
 var gLevel = {

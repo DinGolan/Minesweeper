@@ -9,7 +9,8 @@
 function renderHints() {
     const elContainerHints     = document.querySelector('.hints-container');
     elContainerHints.innerHTML = '';
-    const usedCount            = TOTAL_HINTS - gGame.hintsLeft;
+    
+    const usedCount = TOTAL_HINTS - gGame.hintsLeft;
 
     for (let i = 0; i < TOTAL_HINTS; i++) {
         const elHint     = document.createElement('span');
@@ -38,8 +39,8 @@ function onHintClicked(elHint) {
     elHint.classList.add('active');
 }
 
-function handleHintMode(i, j) {
-    gHintedCells = getCellAndNeighbors(i, j);
+function handleHintMode(currI, currJ) {
+    gHintedCells = getCellAndNeighbors(currI, currJ);
     revealHintCells(gHintedCells)
 
     const timeoutId = setTimeout(() => {
@@ -59,7 +60,7 @@ function handleHintMode(i, j) {
         gHintedCells     = [];
     }, M_SECONDS * 1.5);
 
-    gHintTimeoutIds.push(timeoutId);
+    gTimer.gHintTimeoutIds.push(timeoutId);
 }
 
 function getCellAndNeighbors(cellI, cellJ) {
@@ -96,6 +97,8 @@ function renderCellContent(currCell, elCell) {
     }
     else if (currCell.minesAroundCount > 0) {
         elCell.innerText = currCell.minesAroundCount;
+
+        removeNumberClasses(elCell);
         elCell.classList.add(`cell-${currCell.minesAroundCount}`);
     }
     else {
@@ -121,7 +124,7 @@ function hideHintCells(gHintedCells) {
                 removeNumberClasses(elNegCell);
             }, Math.floor(M_SECONDS / 2));
 
-            gHintTimeoutIds.push(timeoutId);
+            gTimer.gHintTimeoutIds.push(timeoutId);
         }
     }
 }
@@ -135,16 +138,12 @@ function getCellAndElement(cellPosition) {
 }
 
 function clearHintTimeouts() {
-    /**
-     * Explanations :
-     * - Clears any active hint-related timeouts to prevent delayed UI updates from running after game state has changed.
-     **/
-    if (gHintTimeoutIds.length > 0) {
-        for (let i = 0; i < gHintTimeoutIds.length; i++) {
-            if (gHintTimeoutIds[i]) clearTimeout(gHintTimeoutIds[i]);
+    if (gTimer.gHintTimeoutIds.length > 0) {
+        for (let i = 0; i < gTimer.gHintTimeoutIds.length; i++) {
+            if (gTimer.gHintTimeoutIds[i]) clearTimeout(gTimer.gHintTimeoutIds[i]);
         }
 
-        gHintTimeoutIds = [];
+        gTimer.gHintTimeoutIds = [];
     }
 }
 
@@ -235,6 +234,8 @@ function onSafeClick() {
             }
         }
     }
+
+    if (!safeCellsPos.length) return;
 
     const randIdx     = getRandomIntExclusive(0, safeCellsPos.length);
     const randCellPos = safeCellsPos[randIdx];
@@ -425,6 +426,14 @@ function detectAndFixFirstClick() {
 }
 
 function resetPartTimersAndIntervals() {
+    /**
+     * Reset Timers (Order) :
+     * [1] - Hints.
+     * [2] - Safe Click.
+     * [3] - Manual Mode.
+     * [4] - Mega Hint.
+     * [5] - Exterminator.
+     **/
     clearHintTimeouts();
     clearSafeClickTimeout();
     clearSafeFadeoutTimeout();
@@ -529,8 +538,8 @@ function onManualMode() {
     disableManualModeButton(true);
 
     // Reset these values when we returned to the beginning of the game via Undo //
-    gGame.isFirstClick = true;
-    gGame.isOn         = false;
+    if (gGame.isOn) gGame.isOn = false;
+    if (!gGame.isFirstClick) gGame.isFirstClick = true;
 }
 
 function resetMinesFromBoard() {
@@ -543,11 +552,11 @@ function resetMinesFromBoard() {
     }
 }
 
-function placeMineManually(i, j) {
-    const manualCell = gBoard[i][j];
+function placeMineManually(currI, currJ) {
+    const manualCell = gBoard[currI][currJ];
 
     if (manualCell.isMine) return;
-
+    
     manualCell.isMine = true;
     
     gGame.manualPlacedMines++;
@@ -555,7 +564,7 @@ function placeMineManually(i, j) {
     elManualBtn.title = `[Enabled] Select ${gLevel.MINES - gGame.manualPlacedMines} Cells to Place Mines`;
     updateManualMinesCounter();
 
-    const className  = getClassName(i, j);
+    const className  = getClassName(currI, currJ);
     const elCell     = document.querySelector(`.${className}`);
     elCell.innerText = BOMB;
     elCell.classList.add('cell-mine');
@@ -570,7 +579,7 @@ function placeMineManually(i, j) {
         elCell.classList.remove('cell-mine', 'fadeout');
     }, M_SECONDS);
 
-    gManualTimeoutIds.push(manualTimeoutId_1, manualTimeoutId_2);
+    gTimer.gManualTimeoutIds.push(manualTimeoutId_1, manualTimeoutId_2);
 
     if (gGame.manualPlacedMines === gLevel.MINES) {
         setMinesNegsCount(gBoard);
@@ -601,11 +610,11 @@ function disableManualModeButton(isDisabled) {
 }
 
 function clearManualFadeoutTimeouts() {
-    for (let i = 0; i < gManualTimeoutIds.length; i++) {
-        if (gManualTimeoutIds[i]) clearTimeout(gManualTimeoutIds[i]);
+    for (let i = 0; i < gTimer.gManualTimeoutIds.length; i++) {
+        if (gTimer.gManualTimeoutIds[i]) clearTimeout(gTimer.gManualTimeoutIds[i]);
     }
 
-    gManualTimeoutIds = [];
+    gTimer.gManualTimeoutIds = [];
 }
 
 // --- //
@@ -624,8 +633,8 @@ function onMegaHintClick() {
     disableMegaHintButton(true);
 }
 
-function handleMegaHintCellClick(i, j) {
-    const currPos = { i: i, j: j };
+function handleMegaHintCellClick(currI, currJ) {
+    const currPos = { i: currI, j: currJ };
 
     if (!gGame.megaHintStartPos) {
         gGame.megaHintStartPos = currPos;
@@ -650,7 +659,7 @@ function handleMegaHintCellClick(i, j) {
         hideMegaHintArea(cellsToReveal);
     }, M_SECONDS * 1.5);
 
-    gMegaHintTimeoutIds.push(megaHintTimeoutId);
+    gTimer.gMegaHintTimeoutIds.push(megaHintTimeoutId);
 }
 
 function getCellsInRect(startPos, endPos) {
@@ -675,7 +684,7 @@ function revealMegaHintArea(cellsMegaHint) {
     for (const currPos of cellsMegaHint) {
         const currCell  = gBoard[currPos.i][currPos.j];
         const className = getClassName(currPos.i, currPos.j); 
-        const elCell   = document.querySelector(`.${className}`);
+        const elCell    = document.querySelector(`.${className}`);
 
         if (currCell.isRevealed) continue;
 
@@ -688,7 +697,7 @@ function hideMegaHintArea(cellsMegaHint) {
     for (const currPos of cellsMegaHint) {
         const currCell  = gBoard[currPos.i][currPos.j];
         const className = getClassName(currPos.i, currPos.j); 
-        const elCell   = document.querySelector(`.${className}`);
+        const elCell    = document.querySelector(`.${className}`);
 
         if (currCell.isRevealed) continue;
         
@@ -700,16 +709,16 @@ function hideMegaHintArea(cellsMegaHint) {
             removeNumberClasses(elCell);
         }, Math.floor(M_SECONDS / 2));
         
-        gMegaHintTimeoutIds.push(megaHintTimeoutId);
+        gTimer.gMegaHintTimeoutIds.push(megaHintTimeoutId);
     }
 }
 
 function clearMegaHintTimeouts() {
-    for (let i = 0; i < gMegaHintTimeoutIds.length; i++) {
-        if (gMegaHintTimeoutIds[i]) clearTimeout(gMegaHintTimeoutIds[i]);
+    for (let i = 0; i < gTimer.gMegaHintTimeoutIds.length; i++) {
+        if (gTimer.gMegaHintTimeoutIds[i]) clearTimeout(gTimer.gMegaHintTimeoutIds[i]);
     }
 
-    gMegaHintTimeoutIds = [];
+    gTimer.gMegaHintTimeoutIds = [];
 }
 
 function disableMegaHintButton(isDisabled) {
@@ -738,7 +747,7 @@ function onExterminatorClick() {
     const removedMinePositions = removeRandomMinesFromBoard(totalMinePositions);
 
     clearExterminatorTimeouts();
-    hideRemovedMinesVisual(removedMinePositions);
+    hideRemovedMinesVisually(removedMinePositions);
 
     setMinesNegsCount(gBoard);
 }
@@ -766,48 +775,48 @@ function removeRandomMinesFromBoard(totalMinePositions) {
         const randIdx = getRandomIntExclusive(0, totalMinePositions.length);
         const randPos = totalMinePositions.splice(randIdx, 1)[0];
 
-        const randMineCell = gBoard[randPos.i][randPos.j];
+        const randMineCell  = gBoard[randPos.i][randPos.j];
         randMineCell.isMine = false;
         removedMinePositions.push(randPos);
 
         const className = getClassName(randPos.i, randPos.j);
-        const elCell = document.querySelector(`.${className}`);
+        const elCell    = document.querySelector(`.${className}`);
 
         elCell.innerText = BOMB;
         elCell.classList.add('cell-mine');
 
         const exterminatorFadeoutTimeoutId = setTimeout(() => {
             elCell.classList.add('fadeout');
-        }, M_SECONDS / 2);
+        }, Math.floor(M_SECONDS / 2));
 
-        gExterminatorFadeoutTimeoutIds.push(exterminatorFadeoutTimeoutId);
+        gTimer.gExterminatorFadeoutTimeoutIds.push(exterminatorFadeoutTimeoutId);
     }
 
     return removedMinePositions;
 }
 
 function clearExterminatorTimeouts() {
-    for (let i = 0; i < gExterminatorFadeoutTimeoutIds.length; i++) {
-        if (gExterminatorFadeoutTimeoutIds[i]) clearTimeout(gExterminatorFadeoutTimeoutIds[i]);
+    for (let i = 0; i < gTimer.gExterminatorFadeoutTimeoutIds.length; i++) {
+        if (gTimer.gExterminatorFadeoutTimeoutIds[i]) clearTimeout(gTimer.gExterminatorFadeoutTimeoutIds[i]);
     }
     
-    gExterminatorFadeoutTimeoutIds = [];
+    gTimer.gExterminatorFadeoutTimeoutIds = [];
 }
 
-function hideRemovedMinesVisual(removedMinePositions) {
+function hideRemovedMinesVisually(removedMinePositions) {
     const exterminatorFadeoutTimeoutId = setTimeout(() => {
         for (const removedMinePos of removedMinePositions) {
             const removedMineCell = gBoard[removedMinePos.i][removedMinePos.j];
 
             const className = getClassName(removedMinePos.i, removedMinePos.j);
-            const elCell = document.querySelector(`.${className}`);
+            const elCell    = document.querySelector(`.${className}`);
 
             if (!removedMineCell.isRevealed) elCell.innerText = EMPTY;
             elCell.classList.remove('cell-mine', 'fadeout');
         }
     }, M_SECONDS);
 
-    gExterminatorFadeoutTimeoutIds.push(exterminatorFadeoutTimeoutId);
+    gTimer.gExterminatorFadeoutTimeoutIds.push(exterminatorFadeoutTimeoutId);
 }
 
 function disableExterminatorButton(isDisabled) {

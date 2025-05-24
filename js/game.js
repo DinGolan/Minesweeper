@@ -82,9 +82,9 @@ function onInit() {
 }
 
 function resetGameVars() {
-    gBoard          = [];
-    gUndoStack      = [];
-    gHintedCells    = [];
+    gBoard       = [];
+    gUndoStack   = [];
+    gHintedCells = [];
 
     gGame.isOn               = false;
     gGame.isHintMode         = false;
@@ -106,13 +106,17 @@ function resetGameVars() {
 function resetDOM() {
     /**
      * Render Order :
-     * [1] - Theme.
-     * [2] - Radio Buttons.
-     * [3] - Best Score.
-     * [4] - Hints / Lives.
-     * [5] - Mines Counter / Emoji / Timer.
-     * [6] - Safe Clicks.
-     * [7] - Message to User (Edge Cases).
+     * [1]  - Theme.
+     * [2]  - Radio Buttons.
+     * [3]  - Best Score.
+     * [4]  - Hints / Lives.
+     * [5]  - Mines Counter / Emoji / Timer.
+     * [6]  - Safe Click.
+     * [7]  - Undo.
+     * [8]  - Manual Mode.
+     * [9]  - Mega Hint.
+     * [10] - Exterminator.
+     * [11] - Message to User (Edge Cases).
      **/
     resetToggleTheme();
     
@@ -123,23 +127,33 @@ function resetDOM() {
     renderHints();
     updateLivesDisplay();
 
-    updateTimerDisplay();
-    updateFaceDisplay(START_GAME);
     updateMinesCounter();
+    updateFaceDisplay(START_GAME);
+    updateTimerDisplay();
 
+    const safeClickCountsContent = '';
     disableSafeClickButton(true);
+    updateSafeClicksCounts(safeClickCountsContent);
+
     disableUndoButton(true);
     disableManualModeButton(false);
     disableMegaHintButton(true);
     disableExterminatorButton(true);
 
-    const safeClickCountsContent = '';
-    updateSafeClicksCounts(safeClickCountsContent);
-
     hideMessage();
 }
 
 function resetAllTimersAndIntervals() {
+    /**
+     * Reset Timers (Order) :
+     * [1] - Timer.
+     * [2] - Mines.
+     * [3] - Hints.
+     * [4] - Safe Click.
+     * [5] - Manual Mode.
+     * [6] - Mega Hint.
+     * [7] - Exterminator.
+     **/
     stopTimer();
     clearMineTimeout();
     clearHintTimeouts();
@@ -163,14 +177,14 @@ function buildBoard() {
     let board = [];
 
     for (let i = 0; i < gLevel.SIZE; i++) {
-        let row = [];
+        let newRow = [];
 
         for (let j = 0; j < gLevel.SIZE; j++) {
-            let cell = createCell();
-            row.push(cell);
+            let currCell = createCell();
+            newRow.push(currCell);
         }
 
-        board.push(row);
+        board.push(newRow);
     }
 
     return board;
@@ -237,21 +251,21 @@ function renderBoard(selector) {
 // =============================== //
 //        First Click Logic        //
 // =============================== //
-function onCellClicked(elCell, i, j) {
+function onCellClicked(elCell, currI, currJ) {
     // Manual Mode //
     if (gGame.isManualMode) {
-        placeMineManually(i, j);
+        placeMineManually(currI, currJ);
         return;
     }
 
     // Mega Hint //
     if (gGame.isMegaHintMode) {
-        handleMegaHintCellClick(i, j);
+        handleMegaHintCellClick(currI, currJ);
         return;
     }
 
     // First Click //
-    if (gGame.isFirstClick) handleFirstClick(i, j);
+    if (gGame.isFirstClick) handleFirstClick(currI, currJ);
 
     // Game is Off //
     if (!gGame.isOn) return;
@@ -259,41 +273,40 @@ function onCellClicked(elCell, i, j) {
     // Hint Mode //
     if (gGame.isHintMode) {
         clearHintTimeouts();
-        handleHintMode(i, j);
+        handleHintMode(currI, currJ);
         return;
     }
 
     // Store for Reversal Action //
     saveGameState();
 
-    const currCell = gBoard[i][j];
+    const currCell = gBoard[currI][currJ];
     if (currCell.isMarked || currCell.isRevealed) return;
 
     if (currCell.isMine) {
-        handleMineCell(elCell, i, j);
+        handleMineCell(elCell, currI, currJ);
     }
     else if (currCell.minesAroundCount) {
         handleNumberCell(currCell, elCell);
     }
     else {
-        handleEmptyCell(currCell, elCell, i, j);
+        handleEmptyCell(currCell, elCell, currI, currJ);
     }
 }
 
-function handleFirstClick(i, j) {
+function handleFirstClick(currI, currJ) {
     if (!isMineCountValid()) return;
 
     toggleLevelSelectors(true);
-    setMinesPositions(gBoard, i, j);
+    setMinesPositions(gBoard, currI, currJ);
     setMinesNegsCount(gBoard);
     startTimer();
 
     gGame.isOn         = true;
     gGame.isFirstClick = false;
 
-    disableSafeClickButton(false);
-
     const safeClickCountsContent = `${gGame.safeClicksLeft} Clicks Available`;
+    disableSafeClickButton(false);
     updateSafeClicksCounts(safeClickCountsContent);
 
     disableManualModeButton(true);
@@ -323,12 +336,13 @@ function isMineCountValid() {
 // ================================ //
 //       Mine Placement Logic       //
 // ================================ //
+
 // Option A - `setMinesPositions` //
 /**
  * +-----------------+------------------+
  * | Time Complexity | Space Complexity |
  * +-----------------+------------------+
- * |       O(n)      |        O(n)      |
+ * |     O(n ^ 2)    |       O(n)       |
  * +-----------------+------------------+
  **/
 function setMinesPositions(board, firstClickI, firstClickJ) {
@@ -358,7 +372,7 @@ function setMinesPositions(board, firstClickI, firstClickJ) {
  * +-----------------+------------------+
  * | Time Complexity | Space Complexity |
  * +-----------------+------------------+
- * |     O(n ^ 2)    |      O(1)        |
+ * |     O(n)        |      O(1)        |
  * +-----------------+------------------+
  *
  * function setMinesPositions(board, firstClickI, firstClickJ) {
@@ -411,7 +425,7 @@ function calculateMinesAroundCell(board, currI, currJ) {
 // ================================= //
 //        Cell Click Handlers        //
 // ================================= //
-function handleMineCell(elCell, i, j) {
+function handleMineCell(elCell, currI, currJ) {
     elCell.innerText = BOMB;
 
     elCell.classList.add('cell-mine-clicked');
@@ -420,9 +434,9 @@ function handleMineCell(elCell, i, j) {
     updateLivesDisplay();
 
     if (!gGame.livesLeft) {
-        endGameAndRevealMines(i, j);
+        endGameAndRevealMines(currI, currJ);
     } else {
-        const currCell = gBoard[i][j];
+        const currCell = gBoard[currI][currJ];
         resetMineCell(currCell, elCell);
     }
 }
@@ -441,8 +455,7 @@ function handleNumberCell(currCell, elCell) {
     currCell.isRevealed = true;
     gGame.revealedCount++;
     
-    // Remove any existing number color classes (cell-1 ... cell-8) from the cell before adding the class for the current minesAroundCount //
-    removeNumberClasses(elCell);
+    removeNumberClasses(elCell); // Remove any existing number color classes (cell-1 ... cell-8) from the cell before adding the class for the current minesAroundCount //
 
     elCell.innerText = currCell.minesAroundCount;
     elCell.classList.add('cell-number', `cell-${currCell.minesAroundCount}`);
@@ -450,13 +463,13 @@ function handleNumberCell(currCell, elCell) {
     checkGameOver();
 }
 
-function handleEmptyCell(currCell, elCell, i, j) {
+function handleEmptyCell(currCell, elCell, currI, currJ) {
     currCell.isRevealed = true;
     gGame.revealedCount++;
 
     elCell.innerText = EMPTY;
     elCell.classList.add('cell-empty');
-    expandReveal(gBoard, i, j);
+    expandReveal(gBoard, currI, currJ);
 
     checkGameOver();
 }
@@ -493,14 +506,14 @@ function expandReveal(board, currI, currJ) {
 // ============================= //
 //         Marking Logic         //
 // ============================= //
-function onCellMarked(elCell, i, j) {    
-    if (gGame.isFirstClick) handleFirstClick(i, j);
+function onCellMarked(elCell, currI, currJ) {    
+    if (gGame.isFirstClick) handleFirstClick(currI, currJ);
 
     if (!gGame.isOn) return;
 
     saveGameState(); // Store for Reversal Action //
 
-    const currCell = gBoard[i][j];
+    const currCell = gBoard[currI][currJ];
     if (currCell.isRevealed) return;
 
     if (!currCell.isMarked && gGame.markedCount >= gLevel.MINES) {
@@ -577,18 +590,17 @@ function areAllFlagsOnMinesOnly() {
 }
 
 function setGameOver(faceEmoji) {
-    updateFaceDisplay(faceEmoji);
-
     if (faceEmoji === WIN_GAME) {
         updateBestScoreIfNeeded(gLevel.KEY, gGame.secsPassed);
     }
 
+    updateFaceDisplay(faceEmoji);
+
     gGame.isOn = false;
     stopTimer();
 
-    disableSafeClickButton(true);
-
     const safeClickCountsContent = '';
+    disableSafeClickButton(true);
     updateSafeClicksCounts(safeClickCountsContent);
 
     disableUndoButton(true);

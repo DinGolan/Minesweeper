@@ -46,7 +46,7 @@ function updateMinesCounter() {
     const minesLeft          = gLevel.MINES - gGame.markedCount
     const elMinesCounter     = document.querySelector('.minesweeper-counter');
     elMinesCounter.innerText = String(minesLeft).padStart(PAD_ZEROS, '0');
-    elMinesCounter.title     = 'Number of Left Mines';
+    elMinesCounter.title     = 'Remaining Mines';
 }
 
 function updateLivesDisplay() {
@@ -112,8 +112,8 @@ function handleRightClick(event) {
 //      In-Game Messaging UI      //
 // ============================== //
 function showMessage(msgHTML) {
-    const elMsg         = document.querySelector('.minesweeper-message');
-    const elContainer   = document.querySelector('.game-container');
+    const elMsg       = document.querySelector('.minesweeper-message');
+    const elContainer = document.querySelector('.game-container');
 
     elMsg.innerHTML = msgHTML;
     elMsg.classList.add('active');
