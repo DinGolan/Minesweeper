@@ -243,14 +243,13 @@ function onSafeClick() {
     clearSafeClickTimeout();
     gTimer.gSafeClickTimeoutId = setTimeout(() => {
         hideSafeCellContent(randCellPos);
+        
         gGame.safeClicksLeft--;
-        updateSafeClicksCounts();
+        const safeClickCountsContent = `${gGame.safeClicksLeft} Clicks Available`;
+        updateSafeClicksCounts(safeClickCountsContent);
 
-        if (!gGame.safeClicksLeft) {
-            disableSafeClickButton(true);
-        } else {
-            disableSafeClickButton(false); // Re-enable for next safe click //
-        }
+        const toDisableSafeClick = !gGame.safeClicksLeft ? true : false;
+        disableSafeClickButton(toDisableSafeClick);
     }, M_SECONDS * 1.5);
 }
 
@@ -476,7 +475,8 @@ function renderPrevGame() {
     disableMegaHintButton(toDisableMegaHint);
 
     // Exterminator //
-    disableExterminatorButton(gGame.isUsedExterminator);
+    const toDisableExterminator = gGame.isFirstClick ? true : false;
+    disableExterminatorButton(toDisableExterminator);
 }
 
 function disableUndoButton(isDisabled) {

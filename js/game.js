@@ -599,7 +599,7 @@ function setGameOver(faceEmoji) {
 function endGameAndRevealMines(currI, currJ) {
     for (let i = 0; i < gLevel.SIZE; i++) {
         for (let j = 0; j < gLevel.SIZE; j++) {
-            if (i === currI && j === currJ) continue; // Mine gBoard[currI][currJ] already revealed // 
+            if (i === currI && j === currJ) continue; 
 
             const currCell = gBoard[i][j];
             if (currCell.isMine) {
