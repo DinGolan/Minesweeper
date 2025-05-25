@@ -326,9 +326,9 @@ function resetToggleTheme() {
 
 // --- //
 
-// =============================== //
-//         Save Game State         //
-// =============================== //
+// ==================== //
+//         Undo         //
+// ==================== //
 function saveGameState() {
     let boardCopy = copyBoard();
     let gameCopy  = copyGameVariable();
