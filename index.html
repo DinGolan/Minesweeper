@@ -14,31 +14,31 @@
 
 <body onload="onInit()">
     <!-- Dark Mode -->
-    <button class="toggle-theme-btn" onclick="onToggleTheme()"></button>
+    <button class="minesweeper-toggle-theme-btn" onclick="onToggleTheme()"></button>
 
     <!-- Header -->
     <h1 class="minesweeper-title">Minesweeper Game</h1>
 
     <!-- Best Score -->
     <div class="minesweeper-best-score">
-        <div class="best-score-display"></div>
-        <button class="reset-best-btn" onclick="resetBestScore()"></button>
+        <div class="minesweeper-best-score-display"></div>
+        <button class="minesweeper-reset-best-btn" onclick="onResetBestScore()"></button>
     </div>
 
     <!-- Levels -->
-    <div class="level-selector">
+    <div class="minesweeper-level-selector">
         <label><input type="radio" name="level" value="beginner" onclick="onLevelChange(this)" checked> Beginner</label>
         <label><input type="radio" name="level" value="medium" onclick="onLevelChange(this)"> Medium</label>
         <label><input type="radio" name="level" value="expert" onclick="onLevelChange(this)"> Expert</label>
     </div>
 
     <!-- Game -->
-    <div class="game-container">
+    <div class="minesweeper-game-container">
 
         <!-- Lives / Hints -->
-        <div class="lives-and-hints">
-            <div class="hints-container"></div>
-            <div class="lives-display"></div>
+        <div class="minesweeper-lives-and-hints">
+            <div class="minesweeper-hints-container"></div>
+            <div class="minesweeper-lives-display"></div>
         </div>
 
         <!-- Board -->
@@ -54,16 +54,19 @@
     </div>
 
     <!-- Bottom Buttons -->
-    <div class="control-buttons-container">
-        <div class="inline-buttons">
-            <button class="safe-click-btn" onclick="onSafeClick()">Safe Click</button>
-            <button class="undo-btn" onclick="undoMove()">Undo</button>
-            <button class="manual-mode-btn" onclick="onManualMode()">Manual Mode</button>
-            <button class="mega-hint-btn" onclick="onMegaHintClick()">Mega Hint</button>
-            <button class="exterminator-btn" onclick="onExterminatorClick()">Exterminator</button>
+    <div class="minesweeper-control-buttons-container">
+        <div class="minesweeper-inline-buttons">
+            <button class="minesweeper-safe-click-btn" onclick="onSafeClick()">Safe Click</button>
+            <button class="minesweeper-undo-btn" onclick="undoMove()">Undo</button>
+            <button class="minesweeper-manual-mode-btn" onclick="onManualMode()">Manual Mode</button>
+            <button class="minesweeper-mega-hint-btn" onclick="onMegaHintClick()">Mega Hint</button>
+            <button class="minesweeper-exterminator-btn" onclick="onExterminatorClick()">Exterminator</button>
         </div>
-        <div class="safe-clicks-count"></div>
+        <div class="minesweeper-safe-clicks-count"></div>
     </div>
+
+    <!-- Footer -->
+    <footer class="minesweeper-game-footer">Created by Din Golan</footer>
 
     <!-- Script -->
     <script src="js/bonus.js"></script>

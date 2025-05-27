@@ -24,7 +24,7 @@ var gTimer = {
 var gLevel = {
     SIZE:  4,
     MINES: 2,
-    KEY: 'beginner'
+    KEY:   'beginner'
 };
 
 var gGame = {

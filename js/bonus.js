@@ -7,7 +7,7 @@
 //         Hint Mode Logic         //
 // =============================== //
 function renderHints() {
-    const elContainerHints     = document.querySelector('.hints-container');
+    const elContainerHints     = document.querySelector('.minesweeper-hints-container');
     elContainerHints.innerHTML = '';
     
     const usedCount = TOTAL_HINTS - gGame.hintsLeft;
@@ -17,10 +17,10 @@ function renderHints() {
         elHint.innerText = HINT;
 
         if (i < usedCount) {
-            elHint.classList.add('hint', 'used');
+            elHint.classList.add('minesweeper-hint', 'used');
             elHint.title = '';
         } else {
-            elHint.classList.add('hint');
+            elHint.classList.add('minesweeper-hint');
             elHint.title   = 'Click to Activate Hint';
             elHint.onclick = () => onHintClicked(elHint);
         }
@@ -174,11 +174,11 @@ function updateBestScoreIfNeeded(levelKey, currentScore) {
 
 function renderBestScoreDisplay() {
     const bestScore   = getBestScoreValueFromLocalStorage(gLevel.KEY);
-    const elBestScore = document.querySelector('.best-score-display');
-    const elResetBtn  = document.querySelector('.reset-best-btn');
+    const elBestScore = document.querySelector('.minesweeper-best-score-display');
+    const elResetBtn  = document.querySelector('.minesweeper-reset-best-btn');
 
     if (bestScore !== null) {
-        elBestScore.innerText = `${TROPHY} Best Score : ${String(bestScore).padStart(PAD_ZEROS, '0')}`;
+        elBestScore.innerText = `${TROPHY} Best Score : ${String(bestScore).padStart(PAD_ZEROS, '0')} (Sec)`;
         elResetBtn.title      = '[Enabled] Reset Best Score';
         elResetBtn.classList.remove('disabled');
     } else {
@@ -190,7 +190,7 @@ function renderBestScoreDisplay() {
     elResetBtn.innerText = RESET_BEST_SCORE;
 }
 
-function resetBestScore() {
+function onResetBestScore() {
     const bestScore = getBestScoreValueFromLocalStorage(gLevel.KEY);
     if (bestScore === null) return;
 
@@ -205,14 +205,14 @@ function resetBestScore() {
 //         Safe Click         //
 // ========================== //
 function disableSafeClickButton(isDisabled) {
-    const elSafeBtn    = document.querySelector('.safe-click-btn');
+    const elSafeBtn    = document.querySelector('.minesweeper-safe-click-btn');
     elSafeBtn.disabled = isDisabled;
     elSafeBtn.title    = isDisabled ? '[Disabled]' : '[Enabled]';
     elSafeBtn.title   += ' Safe Click';
 }
 
 function updateSafeClicksCounts(safeClickCountsContent) {
-    const elSafeCount     = document.querySelector('.safe-clicks-count');
+    const elSafeCount     = document.querySelector('.minesweeper-safe-clicks-count');
     elSafeCount.innerText = safeClickCountsContent;
 }
 
@@ -312,14 +312,14 @@ function clearSafeFadeoutTimeout() {
 // ========================= //
 function onToggleTheme() {
     const elBody = document.body
-    const elBtn  = document.querySelector('.toggle-theme-btn');
+    const elBtn  = document.querySelector('.minesweeper-toggle-theme-btn');
 
     elBody.classList.toggle('dark-mode');
     elBtn.innerText = THEME;
 }
 
 function resetToggleTheme() {
-    const elBtn     = document.querySelector('.toggle-theme-btn');
+    const elBtn     = document.querySelector('.minesweeper-toggle-theme-btn');
     elBtn.innerText = THEME;
     elBtn.title     = 'Toggle Theme';
 }
@@ -338,7 +338,7 @@ function saveGameState() {
         game: gameCopy
     });
 
-    const elUndoBtn = document.querySelector('.undo-btn');
+    const elUndoBtn = document.querySelector('.minesweeper-undo-btn');
     if (elUndoBtn.disabled) disableUndoButton(false);
 }
 
@@ -489,7 +489,7 @@ function renderPrevGame() {
 }
 
 function disableUndoButton(isDisabled) {
-    const elUndoBtn    = document.querySelector('.undo-btn');
+    const elUndoBtn    = document.querySelector('.minesweeper-undo-btn');
     elUndoBtn.disabled = isDisabled;
     elUndoBtn.title    = isDisabled ? '[Disabled]' : '[Enabled]';
     elUndoBtn.title   += ' Undo Last Move';
@@ -537,6 +537,9 @@ function onManualMode() {
     updateManualMinesCounter();
     disableManualModeButton(true);
 
+    const minesLeft = gLevel.MINES - gGame.manualPlacedMines;
+    showMessage(`<p class="minesweeper-hint-message">💣 Manual Mode Enabled - You Can Place (${minesLeft}) Mines Manually Only ...</p>`);
+
     // Reset these values when we returned to the beginning of the game via Undo //
     if (gGame.isOn) gGame.isOn = false;
     if (!gGame.isFirstClick) gGame.isFirstClick = true;
@@ -554,13 +557,12 @@ function resetMinesFromBoard() {
 
 function placeMineManually(currI, currJ) {
     const manualCell = gBoard[currI][currJ];
-
     if (manualCell.isMine) return;
     
     manualCell.isMine = true;
-    
     gGame.manualPlacedMines++;
-    const elManualBtn = document.querySelector('.manual-mode-btn');
+
+    const elManualBtn = document.querySelector('.minesweeper-manual-mode-btn');
     elManualBtn.title = `[Enabled] Select ${gLevel.MINES - gGame.manualPlacedMines} Cells to Place Mines`;
     updateManualMinesCounter();
 
@@ -584,6 +586,7 @@ function placeMineManually(currI, currJ) {
     if (gGame.manualPlacedMines === gLevel.MINES) {
         setMinesNegsCount(gBoard);
         startTimer();
+        hideMessage();
 
         elManualBtn.title  = `[Disabled] You Can't Select Cells to Place Mines`;
         gGame.isManualMode = false;
@@ -598,7 +601,7 @@ function updateManualMinesCounter() {
 }
 
 function disableManualModeButton(isDisabled) {
-    const elManualBtn    = document.querySelector('.manual-mode-btn');
+    const elManualBtn    = document.querySelector('.minesweeper-manual-mode-btn');
     elManualBtn.disabled = isDisabled;
 
     const leftManualPlacedMines = gLevel.MINES - gGame.manualPlacedMines;
@@ -722,7 +725,7 @@ function clearMegaHintTimeouts() {
 }
 
 function disableMegaHintButton(isDisabled) {
-    const elMegaBtn    = document.querySelector('.mega-hint-btn');
+    const elMegaBtn    = document.querySelector('.minesweeper-mega-hint-btn');
     elMegaBtn.disabled = isDisabled;
     elMegaBtn.title    = isDisabled ? '[Disabled]' : '[Enabled]';
     elMegaBtn.title   += ' Mega Hint - Select Two Cells';
@@ -820,7 +823,7 @@ function hideRemovedMinesVisually(removedMinePositions) {
 }
 
 function disableExterminatorButton(isDisabled) {
-    const elExterminatorBtn    = document.querySelector('.exterminator-btn');
+    const elExterminatorBtn    = document.querySelector('.minesweeper-exterminator-btn');
     elExterminatorBtn.disabled = isDisabled;
     elExterminatorBtn.title    = isDisabled ? '[Disabled]' : '[Enabled]';
     elExterminatorBtn.title   += ` Remove ${NUM_MINES_TO_REMOVE} Random Mines`;

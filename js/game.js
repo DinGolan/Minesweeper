@@ -322,7 +322,7 @@ function isMineCountValid() {
 
         updateFaceDisplay(ERROR);
         showMessage(`<p>⚠️ Too many mines for this board size ...</p>
-                     <p class="hint-message">💡 You need to click on ❌ to start the game again ...</p>`);
+                     <p class="minesweeper-hint-message">💡 You need to click on ❌ to start the game again ...</p>`);
         
         return false;
     }
@@ -570,7 +570,7 @@ function checkGameOver() {
     const areAllCellsRevealed = gGame.revealedCount === totalCells - gLevel.MINES;
     const areAllFlagsCorrect  = areAllFlagsOnMinesOnly();
 
-    if (areAllCellsRevealed || areAllFlagsCorrect) {
+    if (areAllCellsRevealed && areAllFlagsCorrect) {
         setGameOver(WIN_GAME);
     }
 }

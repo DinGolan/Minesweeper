@@ -61,7 +61,37 @@ body.dark-mode {
     background-color: var(--bg-gray);
 }
 
-.toggle-theme-btn {
+body.dark-mode .minesweeper-toggle-theme-btn {
+    background-color: #f5f5f5;
+    color: #000;
+}
+
+body.dark-mode .minesweeper-reset-best-btn {
+    color: #ccc;
+    opacity: 0.6;
+}
+
+body.dark-mode .minesweeper-reset-best-btn:hover {
+    opacity: 1;
+}
+
+body.dark-mode .minesweeper-best-score {
+    color: #f5f5f5;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+}
+
+body.dark-mode .minesweeper-safe-clicks-count {
+    color: #f5f5f5;
+    text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+}
+
+body.dark-mode .minesweeper-game-footer {
+    border-top: 1px solid #555;
+    background-color: #1e1e1e;
+    color: #ccc;
+}
+
+.minesweeper-toggle-theme-btn {
     align-items: center;
     border: none;
     border-radius: 8px;
@@ -76,31 +106,7 @@ body.dark-mode {
     padding: 20px 40px;
     position: absolute;
     top: 20px;
-    transition: background-color 0.3s, color 0.3s;
-}
-
-body.dark-mode .toggle-theme-btn {
-    background-color: #f5f5f5;
-    color: #000;
-}
-
-body.dark-mode .reset-best-btn {
-    color: #ccc;
-    opacity: 0.6;
-}
-
-body.dark-mode .reset-best-btn:hover {
-    opacity: 1;
-}
-
-body.dark-mode .minesweeper-best-score {
-    color: #f5f5f5;
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
-}
-
-body.dark-mode .safe-clicks-count {
-    color: #f5f5f5;
-    text-shadow: 0 0 5px rgba(0, 0, 0, 0.7);
+    transition: background-color 0.3s;
 }
 
 /* --- */
@@ -125,7 +131,7 @@ body.dark-mode .safe-clicks-count {
     width: 100%;
 }
 
-.minesweeper-best-score .reset-best-btn {
+.minesweeper-best-score .minesweeper-reset-best-btn {
     border: none;
     background: none;
     cursor: pointer;
@@ -134,11 +140,11 @@ body.dark-mode .safe-clicks-count {
     transition: opacity 0.5s;
 }
 
-.minesweeper-best-score .reset-best-btn:hover {
+.minesweeper-best-score .minesweeper-reset-best-btn:hover {
     opacity: 1;
 }
 
-.minesweeper-best-score .reset-best-btn.disabled {
+.minesweeper-best-score .minesweeper-reset-best-btn.disabled {
     cursor: default;
     opacity: 0.2;
 }
@@ -148,7 +154,7 @@ body.dark-mode .safe-clicks-count {
 /**********/
 /* LEVELS */
 /**********/
-.level-selector {
+.minesweeper-level-selector {
     display: flex;
     font-family: 'Tahoma', Arial, sans-serif;
     font-size: 1em;
@@ -157,7 +163,7 @@ body.dark-mode .safe-clicks-count {
     margin-bottom: 20px;
 }
 
-.level-selector label {
+.minesweeper-level-selector label {
     background-color: #e0e0e0;
     border: 2px solid #aaa;
     border-radius: 6px;
@@ -169,24 +175,24 @@ body.dark-mode .safe-clicks-count {
     user-select: none;
 }
 
-.level-selector input[type="radio"] {
+.minesweeper-level-selector input[type="radio"] {
     accent-color: #ff2626;
     margin-right: 6px;
 }
 
-.level-selector label:hover {
+.minesweeper-level-selector label:hover {
     background-color: #d0d0d0;
     transform: scale(1.05);
 }
 
-.level-selector label:has(input:checked) {
+.minesweeper-level-selector label:has(input:checked) {
     background-color: #d4ffd4;
     border-color: #00aa00;
     transform: scale(1.05);
 }
 
-.level-selector input[type="radio"]:disabled + label,
-.level-selector label:has(input:disabled) {
+.minesweeper-level-selector input[type="radio"]:disabled + label,
+.minesweeper-level-selector label:has(input:disabled) {
     cursor: not-allowed;
     opacity: 0.5;
     pointer-events: none;
@@ -197,7 +203,7 @@ body.dark-mode .safe-clicks-count {
 /*****************/
 /* LIVES / HINTS */
 /*****************/
-.lives-and-hints {
+.minesweeper-lives-and-hints {
     align-items: center;
     box-sizing: border-box;
     display: flex;
@@ -207,17 +213,17 @@ body.dark-mode .safe-clicks-count {
     width: 100%;
 }
 
-.lives-and-hints .hint {
+.minesweeper-lives-and-hints .minesweeper-hint {
     cursor: pointer;
     border-radius: 4px;
     transition: background 0.3s;
 }
 
-.lives-and-hints .hint.active {
+.minesweeper-lives-and-hints .minesweeper-hint.active {
     background: yellow;
 }
 
-.lives-and-hints .hint.used {
+.minesweeper-lives-and-hints .minesweeper-hint.used {
     cursor: default;
     opacity: 0.2;
     pointer-events: none;
@@ -228,14 +234,14 @@ body.dark-mode .safe-clicks-count {
 /*********************************/
 /* BOARD / MINES COUNTER / TIMER */
 /*********************************/
-.game-container {
+.minesweeper-game-container {
     align-items: center;
     display: flex;
     flex-direction: column;
     position: relative;
 }
 
-.game-container.with-message {
+.minesweeper-game-container.with-message {
     padding-bottom: 20px;
 }
 
@@ -416,21 +422,22 @@ body.dark-mode .safe-clicks-count {
 /**************/
 /* SAFE CLICK */
 /**************/
-.control-buttons-container {
+.minesweeper-control-buttons-container {
     align-items: center;
     display: flex;
     flex-direction: column;
     gap: 8px;
     margin-top: 25px;
+    margin-bottom: 40px;
 }
 
-.control-buttons-container .inline-buttons {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons {
     align-items: flex-start;
     display: flex;
     gap: 50px;
 }
 
-.control-buttons-container .inline-buttons .safe-click-btn {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-safe-click-btn {
     border: none;
     border-radius: 12px;
     background-color: #00aaff;
@@ -444,13 +451,13 @@ body.dark-mode .safe-clicks-count {
     text-align: center;
 }
 
-.control-buttons-container .inline-buttons .safe-click-btn:hover {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-safe-click-btn:hover {
     background-color: #008fcc;
 }
 
-.control-buttons-container .inline-buttons .safe-click-btn:disabled,
-.control-buttons-container .inline-buttons .safe-click-btn:disabled:hover,
-.control-buttons-container .inline-buttons .safe-click-btn:disabled:focus {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-safe-click-btn:disabled,
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-safe-click-btn:disabled:hover,
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-safe-click-btn:disabled:focus {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     background-color: #00aaff;
     cursor: default;
@@ -458,7 +465,7 @@ body.dark-mode .safe-clicks-count {
     opacity: 0.4;
 }
 
-.control-buttons-container .safe-clicks-count {
+.minesweeper-control-buttons-container .minesweeper-safe-clicks-count {
     color: #222;
     font-size: 1.1em;
     font-weight: bold;
@@ -475,7 +482,7 @@ body.dark-mode .safe-clicks-count {
     transition: background-color 0.6s, box-shadow 0.6s;
 }
 
-.minesweeper-board .cell-safe-click.fadeout {
+.minesweeper-board td.cell-safe-click.fadeout {
     box-shadow: none;
     background-color: transparent;
     color: transparent;
@@ -486,7 +493,7 @@ body.dark-mode .safe-clicks-count {
 /********/
 /* UNDO */
 /********/
-.control-buttons-container .inline-buttons .undo-btn {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-undo-btn {
     border: none;
     border-radius: 12px;
     background-color: #ff8c00;
@@ -500,11 +507,11 @@ body.dark-mode .safe-clicks-count {
     text-align: center;
 }
 
-.control-buttons-container .inline-buttons .undo-btn:hover {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-undo-btn:hover {
     background-color: #e67e00;
 }
 
-.control-buttons-container .inline-buttons .undo-btn:disabled {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-undo-btn:disabled {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     background-color: #e67e00;
     cursor: default;
@@ -517,7 +524,7 @@ body.dark-mode .safe-clicks-count {
 /***************/
 /* MANUAL MODE */
 /***************/
-.control-buttons-container .inline-buttons .manual-mode-btn {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-manual-mode-btn {
     border: none;
     border-radius: 12px;
     background-color: #009688;
@@ -531,11 +538,11 @@ body.dark-mode .safe-clicks-count {
     text-align: center;
 }
 
-.control-buttons-container .inline-buttons .manual-mode-btn:hover {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-manual-mode-btn:hover {
     background-color: #00796b;
 }
 
-.control-buttons-container .inline-buttons .manual-mode-btn:disabled {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-manual-mode-btn:disabled {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     background-color: #00796b;
     cursor: default;
@@ -548,7 +555,7 @@ body.dark-mode .safe-clicks-count {
 /*************/
 /* MEGA HINT */
 /*************/
-.control-buttons-container .inline-buttons .mega-hint-btn {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-mega-hint-btn {
     border: none;
     border-radius: 12px;
     background-color: #673ab7;
@@ -562,11 +569,11 @@ body.dark-mode .safe-clicks-count {
     text-align: center;
 }
 
-.control-buttons-container .inline-buttons .mega-hint-btn:hover {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-mega-hint-btn:hover {
     background-color: #512da8;
 }
 
-.control-buttons-container .inline-buttons .mega-hint-btn:disabled {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-mega-hint-btn:disabled {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     background-color: #512da8;
     cursor: default;
@@ -579,7 +586,7 @@ body.dark-mode .safe-clicks-count {
 /****************/
 /* EXTERMINATOR */
 /****************/
-.control-buttons-container .inline-buttons .exterminator-btn {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-exterminator-btn {
     border: none;
     border-radius: 12px;
     background-color: #e53935;
@@ -593,11 +600,11 @@ body.dark-mode .safe-clicks-count {
     text-align: center;
 }
 
-.control-buttons-container .inline-buttons .exterminator-btn:hover {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-exterminator-btn:hover {
     background-color: #c62828;
 }
 
-.control-buttons-container .inline-buttons .exterminator-btn:disabled {
+.minesweeper-control-buttons-container .minesweeper-inline-buttons .minesweeper-exterminator-btn:disabled {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
     background-color: #c62828;
     cursor: default;
@@ -631,6 +638,28 @@ body.dark-mode .safe-clicks-count {
     display: block;
 }
 
-.minesweeper-message .hint-message {
+.minesweeper-message .minesweeper-hint-message {
     color: green;
+}
+
+.with-message ~ .minesweeper-control-buttons-container {
+  margin-top: 40px;
+}
+
+/* --- */
+
+/**********/
+/* FOOTER */
+/**********/
+.minesweeper-game-footer {
+    border-top: 1px solid #999;
+    background: inherit;
+    color: #444;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-top: auto;
+    padding-top: 20px;
+    padding-bottom: 15px;
+    text-align: center;
+    width: 100%;
 }

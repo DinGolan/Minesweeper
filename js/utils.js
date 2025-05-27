@@ -50,13 +50,15 @@ function updateMinesCounter() {
 }
 
 function updateLivesDisplay() {
-    const elLives     = document.querySelector('.lives-display');
+    const elLives     = document.querySelector('.minesweeper-lives-display');
     elLives.innerText = LIVE.repeat(gGame.livesLeft);
     elLives.title     = 'Remaining Lives';
 }
 
 function removeNumberClasses(elCell) {
-    for (let i = 1; i <= 8; i++) {
+    const totalNegs = 8;
+
+    for (let i = 1; i <= totalNegs; i++) {
         if (elCell.classList.contains(`cell-${i}`)) {
             elCell.classList.remove(`cell-${i}`);
         }
@@ -113,7 +115,7 @@ function handleRightClick(event) {
 // ============================== //
 function showMessage(msgHTML) {
     const elMsg       = document.querySelector('.minesweeper-message');
-    const elContainer = document.querySelector('.game-container');
+    const elContainer = document.querySelector('.minesweeper-game-container');
 
     elMsg.innerHTML = msgHTML;
     elMsg.classList.add('active');
@@ -122,7 +124,7 @@ function showMessage(msgHTML) {
 
 function hideMessage() {
     const elMsg       = document.querySelector('.minesweeper-message');
-    const elContainer = document.querySelector('.game-container');
+    const elContainer = document.querySelector('.minesweeper-game-container');
 
     elMsg.innerHTML = '';
     elMsg.classList.remove('active');
